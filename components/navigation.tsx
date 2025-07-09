@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion } from "framer-motion"
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import {
   Search,
   ShoppingCart,
@@ -15,19 +15,23 @@ import {
   Package,
   Heart,
   CreditCard,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { useRouter } from "next/navigation"
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
+import { getSession } from "@/utils/getSession";
+import { UserMetadata } from "@supabase/supabase-js";
+import { signOut } from "@/actions/auth";
 
 // Mock session - replace with your actual auth logic
 const mockSession = {
@@ -36,25 +40,37 @@ const mockSession = {
     email: "john@example.com",
     avatar: "/placeholder.svg?height=32&width=32",
   },
-}
+};
 
 export function Navigation() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const router = useRouter()
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const router = useRouter();
+  const [userSession, setUserSession] = useState<
+    UserMetadata | undefined | null
+  >(null);
 
   // Replace this with your actual session logic
-  const [session, setSession] = useState<typeof mockSession | null>(null) // Change to mockSession to test logged in state
-  const isLoggedIn = !!session
+  const [session, setSession] = useState<typeof mockSession | null>(null); // Change to mockSession to test logged in state
+  const isLoggedIn = !!session;
 
   const handleLogin = () => {
-    router.push("/auth")
-  }
+    router.push("/login");
+  };
 
-  const handleLogout = () => {
-    // Implement your logout logic here
-    setSession(null)
-    console.log("Logging out...")
-  }
+  useEffect(() => {
+    async function fetchEmail() {
+      const userEmail = await getSession();
+      setUserSession(userEmail);
+    }
+
+    fetchEmail();
+  }, []);
+
+  const handleLogout = async () => {
+      await signOut();
+      setUserSession(null);
+      router.push("/");
+  };
 
   const userMenuItems = [
     { icon: User, label: "My Profile", href: "/profile" },
@@ -62,7 +78,7 @@ export function Navigation() {
     { icon: Heart, label: "Wishlist", href: "/wishlist" },
     { icon: CreditCard, label: "Payment Methods", href: "/payment" },
     { icon: Settings, label: "Settings", href: "/settings" },
-  ]
+  ];
 
   return (
     <motion.nav
@@ -81,7 +97,9 @@ export function Navigation() {
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent animate-pulse" />
         <div className="relative z-10 flex items-center justify-center space-x-2">
           <Gift className="h-4 w-4" />
-          <span>Free shipping on orders over $50 • Summer Sale: Up to 50% OFF</span>
+          <span>
+            Free shipping on orders over $50 • Summer Sale: Up to 50% OFF
+          </span>
         </div>
       </motion.div>
 
@@ -97,7 +115,9 @@ export function Navigation() {
             <div className="relative">
               <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/25 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
-                <span className="text-white font-bold text-xl relative z-10">E</span>
+                <span className="text-white font-bold text-xl relative z-10">
+                  E
+                </span>
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-pulse" />
             </div>
@@ -105,7 +125,9 @@ export function Navigation() {
               <span className="text-2xl font-bold bg-gradient-to-r from-slate-800 via-emerald-700 to-slate-800 bg-clip-text text-transparent">
                 EcoStore
               </span>
-              <div className="text-xs text-emerald-600 font-medium -mt-1">Premium • Sustainable</div>
+              <div className="text-xs text-emerald-600 font-medium -mt-1">
+                Premium • Sustainable
+              </div>
             </div>
           </motion.div>
 
@@ -125,25 +147,15 @@ export function Navigation() {
 
           {/* Enhanced Action Buttons */}
           <div className="flex items-center space-x-3">
-            {/* Notifications - only show when logged in */}
-            {isLoggedIn && (
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="hidden md:block">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="relative text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300"
-                >
-                  <Bell className="h-5 w-5" />
-                  <Badge className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs h-5 w-5 flex items-center justify-center p-0 border-2 border-white">
-                    2
-                  </Badge>
-                </Button>
-              </motion.div>
-            )}
+         
 
             {/* User Account - Desktop */}
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} className="hidden lg:block">
-              {isLoggedIn ? (
+            <motion.div
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              className="hidden lg:block"
+            >
+              {userSession ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -151,15 +163,22 @@ export function Navigation() {
                       className="flex items-center space-x-2 text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 px-3 py-2"
                     >
                       <Avatar className="h-8 w-8">
-                        <AvatarImage src={session.user.avatar || "/placeholder.svg"} alt={session.user.name} />
+                        {userSession.picture ? (
+                          <AvatarImage
+                            src={userSession.picture}
+                            alt="account"
+                          />
+                        ) : (
+                          <AvatarImage
+                            src="/images/profile.png"
+                            alt="default"
+                          />
+                        )}
                         <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-sm">
-                          {session.user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
+                          {userSession.name}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">{session.user.name.split(" ")[0]}</span>
+                      <span className="font-medium">{userSession.name}</span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -168,8 +187,12 @@ export function Navigation() {
                     align="end"
                   >
                     <div className="px-3 py-2 border-b border-slate-200">
-                      <p className="font-medium text-slate-900">{session.user.name}</p>
-                      <p className="text-sm text-slate-500">{session.user.email}</p>
+                      <p className="font-medium text-slate-900 truncate">
+                        {userSession.email}
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        {userSession.name}
+                      </p>
                     </div>
                     {userMenuItems.map((item) => (
                       <DropdownMenuItem
@@ -254,7 +277,10 @@ export function Navigation() {
                   {/* User Info */}
                   <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={session.user.avatar || "/placeholder.svg"} alt={session.user.name} />
+                      <AvatarImage
+                        src={session.user.avatar || "/placeholder.svg"}
+                        alt={session.user.name}
+                      />
                       <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
                         {session.user.name
                           .split(" ")
@@ -263,8 +289,12 @@ export function Navigation() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-semibold text-slate-900">{session.user.name}</p>
-                      <p className="text-sm text-slate-600">{session.user.email}</p>
+                      <p className="font-semibold text-slate-900">
+                        {session.user.name}
+                      </p>
+                      <p className="text-sm text-slate-600">
+                        {session.user.email}
+                      </p>
                     </div>
                   </div>
 
@@ -276,8 +306,8 @@ export function Navigation() {
                         variant="ghost"
                         className="w-full justify-start text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300"
                         onClick={() => {
-                          router.push(item.href)
-                          setIsMenuOpen(false)
+                          router.push(item.href);
+                          setIsMenuOpen(false);
                         }}
                       >
                         <item.icon className="h-4 w-4 mr-3" />
@@ -291,8 +321,8 @@ export function Navigation() {
                     variant="ghost"
                     className="w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-300"
                     onClick={() => {
-                      handleLogout()
-                      setIsMenuOpen(false)
+                      handleLogout();
+                      setIsMenuOpen(false);
                     }}
                   >
                     <LogOut className="h-4 w-4 mr-3" />
@@ -304,8 +334,8 @@ export function Navigation() {
                 <Button
                   className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white rounded-xl"
                   onClick={() => {
-                    handleLogin()
-                    setIsMenuOpen(false)
+                    handleLogin();
+                    setIsMenuOpen(false);
                   }}
                 >
                   <User className="h-4 w-4 mr-2" />
@@ -317,5 +347,5 @@ export function Navigation() {
         )}
       </div>
     </motion.nav>
-  )
+  );
 }

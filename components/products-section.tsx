@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Star, Heart, ShoppingCart } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
+import { useCartStore } from "@/store/use-cart"
 
 const products = [
   {
@@ -79,6 +80,8 @@ const products = [
 
 export function ProductsSection() {
   const router = useRouter();
+  const addToCart = useCartStore((state) => state.addToCart)
+  const getItemQuantity = useCartStore((state) => state.getItemQuantity)
   const goToProduct = (id: number) => {
     router.push(`/product/${id}`);
   }
@@ -175,6 +178,14 @@ export function ProductsSection() {
                           View
                         </Button>
                         <Button
+                         onClick={() => addToCart({
+                           id: product.id,
+                           name: product.name,
+                           price: product.price,
+                           originalPrice: product.originalPrice,
+                           image: product.image,
+                                                     
+                         })}
                           size="sm"
                           className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
                         >
