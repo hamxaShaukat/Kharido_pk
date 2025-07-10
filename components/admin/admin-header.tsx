@@ -1,26 +1,43 @@
-"use client"
+"use client";
 
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Settings, User, LogOut, Bell, Home, Package, BarChart3, Users, ShoppingCart, Leaf } from "lucide-react"
-import Link from "next/link"
-
-const adminUser = {
-  name: "Admin User",
-  email: "admin@ecostore.com",
-  avatar: "/placeholder.svg?height=32&width=32",
-}
+} from "@/components/ui/dropdown-menu";
+import { getSession } from "@/utils/getSession";
+import { UserMetadata } from "@supabase/supabase-js";
+import { motion } from "framer-motion";
+import {
+  BarChart3,
+  Home,
+  Leaf,
+  LogOut,
+  Package,
+  ShoppingCart,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 
 export function AdminHeader() {
+  const [userSession, setUserSession] = useState<
+    UserMetadata | undefined | null
+  >(null);
+  console.log(userSession?.picture , "User Session in Admin Header");
+  useEffect(() => {
+    async function fetchSession() {
+      const userEmail = await getSession();
+      setUserSession(userEmail);
+    }
+
+    fetchSession();
+  }, []);
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -39,7 +56,9 @@ export function AdminHeader() {
               <span className="font-bold text-xl bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                 EcoStore
               </span>
-              <Badge className="ml-2 bg-emerald-100 text-emerald-700 text-xs">Admin</Badge>
+              <Badge className="ml-2 bg-emerald-100 text-emerald-700 text-xs">
+                Admin
+              </Badge>
             </div>
           </Link>
 
@@ -52,7 +71,10 @@ export function AdminHeader() {
               <BarChart3 className="h-4 w-4" />
               <span>Dashboard</span>
             </Link>
-            <Link href="/admin/list" className="flex items-center space-x-2 text-emerald-600 font-medium">
+            <Link
+              href="/admin/list"
+              className="flex items-center space-x-2 text-emerald-600 font-medium"
+            >
               <Package className="h-4 w-4" />
               <span>Products</span>
             </Link>
@@ -75,7 +97,7 @@ export function AdminHeader() {
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {/* Notifications */}
-            <Button
+            {/* <Button
               variant="ghost"
               size="icon"
               className="relative text-slate-700 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl"
@@ -84,7 +106,7 @@ export function AdminHeader() {
               <Badge className="absolute -top-1 -right-1 bg-red-500 text-white text-xs h-5 w-5 flex items-center justify-center p-0">
                 3
               </Badge>
-            </Button>
+            </Button> */}
 
             {/* Back to Store */}
             <Button
@@ -102,37 +124,40 @@ export function AdminHeader() {
             {/* User Menu */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="flex items-center space-x-2 hover:bg-emerald-50 rounded-xl px-3">
+                <Button
+                  variant="ghost"
+                  className="flex items-center space-x-2 hover:bg-emerald-50 rounded-xl px-3"
+                >
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={adminUser.avatar || "/placeholder.svg"} alt={adminUser.name} />
-                    <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                      {adminUser.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
+                    {userSession?.picture ? (
+                      <AvatarImage src={userSession?.picture} alt="account" />
+                    ) : (
+                      <AvatarImage src="/images/profile.png" alt="default" />
+                    )}
+                    <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-sm">
+                      {userSession?.name ||
+                        userSession?.firstName + " " + userSession?.lastName}
                     </AvatarFallback>
                   </Avatar>
                   <div className="hidden sm:block text-left">
-                    <div className="text-sm font-medium text-slate-900">{adminUser.name}</div>
+                    <div className="text-sm font-medium text-slate-900 truncate">
+                      {userSession?.name ||
+                        userSession?.firstName + " " + userSession?.lastName}
+                    </div>
                     <div className="text-xs text-slate-500">Administrator</div>
                   </div>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end">
                 <div className="px-3 py-2">
-                  <p className="text-sm font-medium text-slate-900">{adminUser.name}</p>
-                  <p className="text-xs text-slate-500">{adminUser.email}</p>
+                  <p className="text-sm font-medium text-slate-900 capitalize">
+                    {userSession?.name ||
+                      userSession?.firstName + " " + userSession?.lastName}
+                  </p>
+                  <p className="text-xs text-slate-500 truncate">{userSession?.email}</p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="cursor-pointer">
-                  <User className="mr-2 h-4 w-4" />
-                  Profile
-                </DropdownMenuItem>
-                <DropdownMenuItem className="cursor-pointer">
-                  <Settings className="mr-2 h-4 w-4" />
-                  Settings
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
+
                 <DropdownMenuItem className="cursor-pointer text-red-600">
                   <LogOut className="mr-2 h-4 w-4" />
                   Sign out
@@ -143,5 +168,5 @@ export function AdminHeader() {
         </div>
       </div>
     </motion.header>
-  )
+  );
 }

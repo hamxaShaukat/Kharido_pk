@@ -1,21 +1,7 @@
 "use client";
-import { useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -25,131 +11,48 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
 import {
-  Plus,
-  X,
-  ImageIcon,
-  Save,
-  RefreshCw,
-  Package,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import categories from "@/constants/categories";
+import { ProductFormData, productSchema } from "@/types/product";
+import { createClient } from "@/utils/supabase/client";
+import showToast from "@/utils/toast";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AnimatePresence, motion } from "framer-motion";
+import {
   AlertCircle,
-  CheckCircle2,
-  Star,
-  ShoppingBag,
-  Camera,
-  DollarSign,
-  Tag,
-  Eye,
-  Upload,
   BarChart3,
-  Settings,
-  Zap,
-  TrendingUp,
+  Camera,
+  CheckCircle2,
+  DollarSign,
+  Eye,
+  ImageIcon,
   Info,
+  Package,
+  Plus,
+  RefreshCw,
+  Save,
+  Settings,
+  ShoppingBag,
+  Star,
+  Tag,
+  TrendingUp,
+  Upload,
+  X,
+  Zap,
 } from "lucide-react";
 import Image from "next/image";
-import { createClient } from "@/utils/supabase/client";
-
-const categories = [
-  "Electronics",
-  "Fashion",
-  "Home & Garden",
-  "Sports & Fitness",
-  "Books & Media",
-  "Automotive",
-  "Baby & Kids",
-  "Food & Beverages",
-  "Beauty & Personal Care",
-  "Toys & Games",
-  "Office Supplies",
-  "Pet Supplies",
-];
-
-const productSchema = z
-  .object({
-    actualId: z
-      .string()
-      .min(1, "Product ID is required")
-      .min(3, "Product ID must be at least 3 characters")
-      .max(50, "Product ID must be less than 50 characters")
-      .regex(
-        /^[a-zA-Z0-9-_]+$/,
-        "Product ID can only contain letters, numbers, hyphens, and underscores"
-      )
-      .transform((val) => val.toLowerCase()),
-    name: z
-      .string()
-      .min(1, "Product name is required")
-      .min(2, "Product name must be at least 2 characters")
-      .max(100, "Product name must be less than 100 characters")
-      .transform((val) => val.trim()),
-    description: z
-      .string()
-      .min(1, "Description is required")
-      .min(10, "Description must be at least 10 characters")
-      .max(1000, "Description must be less than 1000 characters")
-      .transform((val) => val.trim()),
-    price: z
-      .number({ invalid_type_error: "Price must be a valid number" })
-      .min(0.01, "Price must be greater than $0.00")
-      .max(999999.99, "Price must be less than $1,000,000")
-      .multipleOf(0.01, "Price must have at most 2 decimal places"),
-    originalPrice: z
-      .number({ invalid_type_error: "Original price must be a valid number" })
-      .min(0.01, "Original price must be greater than $0.00")
-      .max(999999.99, "Original price must be less than $1,000,000")
-      .multipleOf(0.01, "Original price must have at most 2 decimal places")
-      .optional(),
-    thumbnail: z
-      .string()
-      .min(1, "Thumbnail image is required")
-      .refine((val) => {
-        return (
-          val.startsWith("data:image/") ||
-          z.string().url().safeParse(val).success
-        );
-      }, "Must be a valid image URL or uploaded file"),
-    images: z
-      .array(z.string())
-      .max(10, "Maximum 10 additional images allowed")
-      .refine((images) => {
-        return images.every(
-          (img) =>
-            img.startsWith("data:image/") ||
-            z.string().url().safeParse(img).success
-        );
-      }, "All images must be valid URLs or uploaded files"),
-    category: z
-      .string()
-      .min(1, "Category is required")
-      .refine(
-        (val) => categories.includes(val),
-        "Please select a valid category"
-      ),
-    stock: z
-      .number({ invalid_type_error: "Stock must be a valid number" })
-      .int("Stock must be a whole number")
-      .min(0, "Stock cannot be negative")
-      .max(999999, "Stock must be less than 1,000,000"),
-  })
-  .refine(
-    (data) => {
-      if (
-        data.originalPrice !== undefined &&
-        data.originalPrice <= data.price
-      ) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "Original price must be greater than current price",
-      path: ["originalPrice"],
-    }
-  );
-
-type ProductFormData = z.infer<typeof productSchema>;
+import { useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 export function ProductForm() {
   const [isLoading, setIsLoading] = useState(false);
@@ -198,26 +101,25 @@ export function ProductForm() {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-  const extension = file.name.split(".").pop(); // jpg, png, etc.
-  const fileName = `${crypto.randomUUID()}.${extension}`; // ✅ safe + valid
-  const filePath = `products/${fileName}`; // optional foldering
+    const extension = file.name.split(".").pop(); // jpg, png, etc.
+    const fileName = `${crypto.randomUUID()}.${extension}`; // ✅ safe + valid
+    const filePath = `products/${fileName}`; // optional foldering
 
-  const { error } = await supabase.storage
-    .from("product-images")
-    .upload(filePath, file);
+    const { error } = await supabase.storage
+      .from("product-images")
+      .upload(filePath, file);
 
-  if (error) {
-    console.error("Error uploading image:", error.message);
-    return null;
-  }
+    if (error) {
+      console.error("Error uploading image:", error.message);
+      return null;
+    }
 
-  const { data } = await supabase.storage
-    .from("product-images")
-    .getPublicUrl(filePath);
+    const { data } = await supabase.storage
+      .from("product-images")
+      .getPublicUrl(filePath);
 
-  return data?.publicUrl ?? null;
-};
-
+    return data?.publicUrl ?? null;
+  };
 
   const removeImage = async (index: number) => {
     const currentImages = getValues("images");
@@ -281,16 +183,43 @@ export function ProductForm() {
   const onSubmit = async (data: ProductFormData) => {
     setIsLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      console.log("Product data:", data);
-      form.reset();
-      setNewImageUrl("");
-      alert("Product added successfully!");
-    } catch (error) {
-      console.error("Error adding product:", error);
-      form.setError("root", {
-        message: "Failed to add product. Please try again.",
+      const { error } = await supabase.from("products").insert({
+        actual_id: data.actualId,
+
+        price: data.price,
+
+        category: data.category,
+
+        title: data.name,
+
+        description: data.description,
+
+        original_price: data.originalPrice || null,
+
+        thumbnail: data.thumbnail,
+
+        images: data.images,
+
+        stock: data.stock,
       });
+      if (error) {
+        console.error("Supabase insert error:", error.message);
+        form.setError("root", {
+          message: "Failed to add product. Please try again.",
+        });
+        showToast("error", "Failed to add product.");
+      } else {
+        console.log("Product data:", data);
+        form.reset();
+        setNewImageUrl("");
+        showToast("success", "✅ Product added successfully!");
+      }
+    } catch (err) {
+      console.error("Unexpected error:", err);
+      form.setError("root", {
+        message: "Unexpected error occurred.",
+      });
+      showToast("error", "Something went wrong!");
     } finally {
       setIsLoading(false);
     }
@@ -654,13 +583,13 @@ export function ProductForm() {
                                   <FormControl>
                                     <Input
                                       type="number"
-                                      step="0.01"
-                                      min="0"
-                                      placeholder="0.00"
+                                      step="1"
+                                      min="1"
+                                      placeholder="000"
                                       {...field}
                                       onChange={(e) =>
                                         field.onChange(
-                                          Number.parseFloat(e.target.value) || 0
+                                          Number.parseInt(e.target.value) || 0
                                         )
                                       }
                                       className="h-11 bg-white/80 border-emerald-200 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 rounded-lg"
@@ -688,14 +617,14 @@ export function ProductForm() {
                                   <FormControl>
                                     <Input
                                       type="number"
-                                      step="0.01"
-                                      min="0"
-                                      placeholder="0.00"
+                                      step="1"
+                                      min="1"
+                                      placeholder="000"
                                       {...field}
                                       value={field.value || ""}
                                       onChange={(e) =>
                                         field.onChange(
-                                          Number.parseFloat(e.target.value) ||
+                                          Number.parseInt(e.target.value) ||
                                             undefined
                                         )
                                       }

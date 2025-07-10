@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCartStore } from "@/store/use-cart";
+import categories from "@/constants/categories";
 
 interface Product {
   id: number;
@@ -63,14 +64,7 @@ const allProducts: Product[] = [
   },
 ];
 
-const categories = [
-  "All",
-  "Electronics",
-  "Fashion",
-  "Home & Garden",
-  "Sports",
-  "Books",
-];
+
 const brands = ["All", ...Array.from(new Set(allProducts.map((p) => p.brand)))];
 const sortOptions = [
   { value: "featured", label: "Featured" },

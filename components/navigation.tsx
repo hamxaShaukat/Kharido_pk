@@ -1,38 +1,34 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Search,
-  ShoppingCart,
-  Menu,
-  ChevronDown,
-  User,
-  Bell,
-  Gift,
-  LogOut,
-  Settings,
-  Package,
-  Heart,
-  CreditCard,
-} from "lucide-react";
+import { signOut } from "@/actions/auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useRouter } from "next/navigation";
-import { createClient } from "@/utils/supabase/client";
+import { Input } from "@/components/ui/input";
+import { useCartTotalItems } from "@/store/use-cart";
 import { getSession } from "@/utils/getSession";
 import { UserMetadata } from "@supabase/supabase-js";
-import { signOut } from "@/actions/auth";
-import { useCartTotalItems } from "@/store/use-cart";
+import { motion } from "framer-motion";
+import {
+  ChevronDown,
+  CreditCard,
+  Gift,
+  Heart,
+  LogOut,
+  Menu,
+  Package,
+  Search,
+  Settings,
+  User
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { CartDropdown } from "./card-dropdown";
 
 // Mock session - replace with your actual auth logic
@@ -266,28 +262,27 @@ export function Navigation() {
               </div>
 
               {/* Mobile User Section */}
-              {isLoggedIn ? (
+              {userSession ? (
                 <div className="space-y-4">
                   {/* User Info */}
                   <div className="flex items-center space-x-3 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl">
-                    <Avatar className="h-12 w-12">
-                      <AvatarImage
-                        src={session.user.avatar || "/placeholder.svg"}
-                        alt={session.user.name}
-                      />
-                      <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
-                        {session.user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
+                    <Avatar className="h-8 w-8">
+                      {userSession.picture ? (
+                        <AvatarImage src={userSession.picture} alt="account" />
+                      ) : (
+                        <AvatarImage src="/images/profile.png" alt="default" />
+                      )}
+                      <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-600 text-white text-sm">
+                        {userSession.name}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <p className="font-semibold text-slate-900">
-                        {session.user.name}
+                        {userSession.name ||
+                          userSession.firstName + " " + userSession.lastName}
                       </p>
                       <p className="text-sm text-slate-600">
-                        {session.user.email}
+                        {userSession.email}
                       </p>
                     </div>
                   </div>
