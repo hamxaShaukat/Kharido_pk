@@ -203,7 +203,7 @@ export function ProductForm() {
   const filePath = `products/${fileName}`; // optional foldering
 
   const { error } = await supabase.storage
-    .from("products-images")
+    .from("product-images")
     .upload(filePath, file);
 
   if (error) {
@@ -212,7 +212,7 @@ export function ProductForm() {
   }
 
   const { data } = await supabase.storage
-    .from("products-images")
+    .from("product-images")
     .getPublicUrl(filePath);
 
   return data?.publicUrl ?? null;
