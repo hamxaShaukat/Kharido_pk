@@ -12,6 +12,8 @@ type Product = {
   name: string;
   description: string;
   price: number;
+  originalPrice?: number;
+  thumbnail: string;
   images: string[];
   category: string;
   rating: number;

@@ -26,6 +26,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { signInWithGoogle } from "@/actions/auth";
+import { createClient } from "@/utils/supabase/client";
+import Swal from "sweetalert2";
 
 interface FormData {
   firstName: string;
@@ -34,11 +36,10 @@ interface FormData {
   phone: string;
   password: string;
   confirmPassword: string;
-  agreeToTerms: boolean;
-  subscribeNewsletter: boolean;
 }
 
 export function AuthComponent() {
+  const supabase = createClient();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -49,9 +50,7 @@ export function AuthComponent() {
     email: "",
     phone: "",
     password: "",
-    confirmPassword: "",
-    agreeToTerms: false,
-    subscribeNewsletter: true,
+    confirmPassword: ""
   });
   const [errors, setErrors] = useState<Partial<FormData>>({});
 
@@ -84,19 +83,6 @@ export function AuthComponent() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsLoading(false);
-
-    // Handle success (redirect, show success message, etc.)
-    console.log(isLogin ? "Login successful" : "Signup successful", formData);
-  };
-
   const handleInputChange = (
     field: keyof FormData,
     value: string | boolean
@@ -107,15 +93,84 @@ export function AuthComponent() {
     }
   };
 
- async function handleGoogleSignIn() {
-  const {url}= await signInWithGoogle('/');
-  if (url) {
-    window.location.href = url;
-  } else {
-    console.error("Failed to initiate Google sign-in");
+  async function handleGoogleSignIn() {
+    const { url } = await signInWithGoogle("/");
+    if (url) {
+      window.location.href = url;
+    } else {
+      console.error("Failed to initiate Google sign-in");
+    }
   }
-  
- }
+
+ const handleLoginWithPassword = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  if (!validateForm()) return;
+  setIsLoading(true);
+
+  if (isLogin) {
+    // Login flow
+    const { error } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (error) {
+      setErrors({ email: error.message });
+
+      Swal.fire({
+        icon: "error",
+        title: "Login Failed",
+        text: error.message,
+        confirmButtonColor: "#ef4444",
+      });
+    } else {
+      Swal.fire({
+        icon: "success",
+        title: "Logged in successfully!",
+        showConfirmButton: false,
+        timer: 1500,
+      }).then(() => {
+        window.location.href = "/";
+      });
+    }
+  } else {
+    // Registration flow
+    const { error } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+      
+        },
+      },
+    });
+
+    if (error) {
+      setErrors({ email: error.message });
+
+      Swal.fire({
+        icon: "error",
+        title: "Signup Failed",
+        text: error.message,
+        confirmButtonColor: "#ef4444",
+      });
+    } else {
+      Swal.fire({
+        icon: "success",
+        title: "Account created successfully!",
+        text: "Check your email to confirm your account.",
+        confirmButtonColor: "#10b981",
+      }).then(() => {
+        window.location.href = "/";
+      });
+    }
+  }
+
+  setIsLoading(false); // ✅ Reset loading state
+};
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-emerald-50 relative overflow-hidden">
       {/* Background Elements */}
@@ -278,7 +333,7 @@ export function AuthComponent() {
                 </div>
 
                 {/* Auth Form */}
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={handleLoginWithPassword} className="space-y-4">
                   <AnimatePresence mode="wait">
                     {!isLogin && (
                       <motion.div
@@ -495,9 +550,7 @@ export function AuthComponent() {
                           email: "",
                           phone: "",
                           password: "",
-                          confirmPassword: "",
-                          agreeToTerms: false,
-                          subscribeNewsletter: true,
+                          confirmPassword: ""
                         });
                       }}
                       className="text-emerald-600 hover:text-emerald-700 font-medium transition-colors cursor-pointer"

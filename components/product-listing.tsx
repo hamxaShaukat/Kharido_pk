@@ -1,13 +1,13 @@
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Slider } from "@/components/ui/slider"
-import { Checkbox } from "@/components/ui/checkbox"
+import { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Star,
   Heart,
@@ -19,23 +19,30 @@ import {
   ChevronDown,
   ChevronRight,
   SlidersHorizontal,
-} from "lucide-react"
-import Image from "next/image"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+} from "lucide-react";
+import Image from "next/image";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useCartStore } from "@/store/use-cart";
 
 interface Product {
-  id: number
-  name: string
-  price: number
-  originalPrice: number
-  rating: number
-  reviews: number
-  image: string
-  badge?: string
-  category: string
-  brand: string
-  inStock: boolean
-  featured: boolean
+  id: number;
+  name: string;
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviews: number;
+  thumbnail: string;
+  image: string;
+  badge?: string;
+  category: string;
+  brand: string;
+  inStock: boolean;
+  featured: boolean;
 }
 
 const allProducts: Product[] = [
@@ -46,6 +53,7 @@ const allProducts: Product[] = [
     originalPrice: 249.99,
     rating: 4.8,
     reviews: 324,
+    thumbnail: "/placeholder.svg?height=300&width=300",
     image: "/placeholder.svg?height=300&width=300",
     badge: "Best Seller",
     category: "Electronics",
@@ -53,160 +61,17 @@ const allProducts: Product[] = [
     inStock: true,
     featured: true,
   },
-  {
-    id: 2,
-    name: "Sustainable Fashion Jacket",
-    price: 89.99,
-    originalPrice: 129.99,
-    rating: 4.6,
-    reviews: 189,
-    image: "/placeholder.svg?height=300&width=300",
-    badge: "New",
-    category: "Fashion",
-    brand: "GreenWear",
-    inStock: true,
-    featured: false,
-  },
-  {
-    id: 3,
-    name: "Bamboo Home Organizer",
-    price: 45.99,
-    originalPrice: 65.99,
-    rating: 4.9,
-    reviews: 203,
-    image: "/placeholder.svg?height=300&width=300",
-    badge: "Eco-Friendly",
-    category: "Home & Garden",
-    brand: "BambooLife",
-    inStock: true,
-    featured: true,
-  },
-  {
-    id: 4,
-    name: "Solar Power Bank 20000mAh",
-    price: 79.99,
-    originalPrice: 99.99,
-    rating: 4.7,
-    reviews: 156,
-    image: "/placeholder.svg?height=300&width=300",
-    badge: "Popular",
-    category: "Electronics",
-    brand: "SolarTech",
-    inStock: true,
-    featured: false,
-  },
-  {
-    id: 5,
-    name: "Organic Cotton T-Shirt",
-    price: 29.99,
-    originalPrice: 39.99,
-    rating: 4.5,
-    reviews: 278,
-    image: "/placeholder.svg?height=300&width=300",
-    badge: "Sale",
-    category: "Fashion",
-    brand: "EcoWear",
-    inStock: true,
-    featured: false,
-  },
-  {
-    id: 6,
-    name: "Recycled Yoga Mat",
-    price: 59.99,
-    originalPrice: 79.99,
-    rating: 4.8,
-    reviews: 167,
-    image: "/placeholder.svg?height=300&width=300",
-    badge: "Featured",
-    category: "Sports",
-    brand: "YogaEco",
-    inStock: true,
-    featured: true,
-  },
-  {
-    id: 7,
-    name: "Smart Water Bottle",
-    price: 49.99,
-    originalPrice: 69.99,
-    rating: 4.4,
-    reviews: 92,
-    image: "/placeholder.svg?height=300&width=300",
-    category: "Sports",
-    brand: "HydroSmart",
-    inStock: true,
-    featured: false,
-  },
-  {
-    id: 8,
-    name: "Eco-Friendly Phone Case",
-    price: 24.99,
-    originalPrice: 34.99,
-    rating: 4.6,
-    reviews: 145,
-    image: "/placeholder.svg?height=300&width=300",
-    badge: "New",
-    category: "Electronics",
-    brand: "GreenTech",
-    inStock: false,
-    featured: false,
-  },
-  {
-    id: 9,
-    name: "Sustainable Backpack",
-    price: 89.99,
-    originalPrice: 119.99,
-    rating: 4.7,
-    reviews: 234,
-    image: "/placeholder.svg?height=300&width=300",
-    category: "Fashion",
-    brand: "EcoTravel",
-    inStock: true,
-    featured: false,
-  },
-  {
-    id: 10,
-    name: "LED Desk Lamp",
-    price: 69.99,
-    originalPrice: 89.99,
-    rating: 4.5,
-    reviews: 178,
-    image: "/placeholder.svg?height=300&width=300",
-    category: "Home & Garden",
-    brand: "BrightEco",
-    inStock: true,
-    featured: false,
-  },
-  {
-    id: 11,
-    name: "Wireless Charging Pad",
-    price: 39.99,
-    originalPrice: 54.99,
-    rating: 4.3,
-    reviews: 89,
-    image: "/placeholder.svg?height=300&width=300",
-    category: "Electronics",
-    brand: "ChargeTech",
-    inStock: true,
-    featured: false,
-  },
-  {
-    id: 12,
-    name: "Eco-Friendly Notebook Set",
-    price: 19.99,
-    originalPrice: 29.99,
-    rating: 4.8,
-    reviews: 312,
-    image: "/placeholder.svg?height=300&width=300",
-    badge: "Best Seller",
-    category: "Books",
-    brand: "GreenPaper",
-    inStock: true,
-    featured: true,
-  },
-]
+];
 
-const categories = ["All", "Electronics", "Fashion", "Home & Garden", "Sports", "Books"]
-const brands = ["All", ...Array.from(new Set(allProducts.map((p) => p.brand)))]
+const categories = [
+  "All",
+  "Electronics",
+  "Fashion",
+  "Home & Garden",
+  "Sports",
+  "Books",
+];
+const brands = ["All", ...Array.from(new Set(allProducts.map((p) => p.brand)))];
 const sortOptions = [
   { value: "featured", label: "Featured" },
   { value: "price-low", label: "Price: Low to High" },
@@ -214,81 +79,103 @@ const sortOptions = [
   { value: "rating", label: "Highest Rated" },
   { value: "newest", label: "Newest" },
   { value: "reviews", label: "Most Reviews" },
-]
+];
 
 export function ProductListing() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [selectedBrand, setSelectedBrand] = useState("All")
-  const [priceRange, setPriceRange] = useState([0, 300])
-  const [minRating, setMinRating] = useState(0)
-  const [showInStockOnly, setShowInStockOnly] = useState(false)
-  const [sortBy, setSortBy] = useState("featured")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [showFilters, setShowFilters] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [wishlistedItems, setWishlistedItems] = useState<number[]>([])
-  const itemsPerPage = 12
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedBrand, setSelectedBrand] = useState("All");
+  const [priceRange, setPriceRange] = useState([0, 300]);
+  const [minRating, setMinRating] = useState(0);
+  const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const [sortBy, setSortBy] = useState("featured");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [wishlistedItems, setWishlistedItems] = useState<number[]>([]);
+  const itemsPerPage = 12;
+  const addToCart = useCartStore((state) => state.addToCart);
+  const getItemQuantity = useCartStore((state) => state.getItemQuantity);
 
   const filteredAndSortedProducts = useMemo(() => {
     const filtered = allProducts.filter((product) => {
       const matchesSearch =
         product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.category.toLowerCase().includes(searchQuery.toLowerCase())
+        product.category.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesCategory = selectedCategory === "All" || product.category === selectedCategory
-      const matchesBrand = selectedBrand === "All" || product.brand === selectedBrand
-      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
-      const matchesRating = product.rating >= minRating
-      const matchesStock = !showInStockOnly || product.inStock
+      const matchesCategory =
+        selectedCategory === "All" || product.category === selectedCategory;
+      const matchesBrand =
+        selectedBrand === "All" || product.brand === selectedBrand;
+      const matchesPrice =
+        product.price >= priceRange[0] && product.price <= priceRange[1];
+      const matchesRating = product.rating >= minRating;
+      const matchesStock = !showInStockOnly || product.inStock;
 
-      return matchesSearch && matchesCategory && matchesBrand && matchesPrice && matchesRating && matchesStock
-    })
+      return (
+        matchesSearch &&
+        matchesCategory &&
+        matchesBrand &&
+        matchesPrice &&
+        matchesRating &&
+        matchesStock
+      );
+    });
 
     // Sort products
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "price-low":
-          return a.price - b.price
+          return a.price - b.price;
         case "price-high":
-          return b.price - a.price
+          return b.price - a.price;
         case "rating":
-          return b.rating - a.rating
+          return b.rating - a.rating;
         case "newest":
-          return b.id - a.id
+          return b.id - a.id;
         case "reviews":
-          return b.reviews - a.reviews
+          return b.reviews - a.reviews;
         case "featured":
         default:
-          return b.featured ? 1 : -1
+          return b.featured ? 1 : -1;
       }
-    })
+    });
 
-    return filtered
-  }, [searchQuery, selectedCategory, selectedBrand, priceRange, minRating, showInStockOnly, sortBy])
+    return filtered;
+  }, [
+    searchQuery,
+    selectedCategory,
+    selectedBrand,
+    priceRange,
+    minRating,
+    showInStockOnly,
+    sortBy,
+  ]);
 
-  const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage);
   const paginatedProducts = filteredAndSortedProducts.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  )
+    currentPage * itemsPerPage
+  );
 
   const toggleWishlist = (productId: number) => {
     setWishlistedItems((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId],
-    )
-  }
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
 
   const clearFilters = () => {
-    setSearchQuery("")
-    setSelectedCategory("All")
-    setSelectedBrand("All")
-    setPriceRange([0, 300])
-    setMinRating(0)
-    setShowInStockOnly(false)
-    setCurrentPage(1)
-  }
+    setSearchQuery("");
+    setSelectedCategory("All");
+    setSelectedBrand("All");
+    setPriceRange([0, 300]);
+    setMinRating(0);
+    setShowInStockOnly(false);
+    setCurrentPage(1);
+  };
 
   return (
     <div className="min-h-screen bg-white py-8">
@@ -303,9 +190,12 @@ export function ProductListing() {
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">All Products</h1>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              All Products
+            </h1>
             <p className="text-slate-600">
-              Showing {paginatedProducts.length} of {filteredAndSortedProducts.length} products
+              Showing {paginatedProducts.length} of{" "}
+              {filteredAndSortedProducts.length} products
             </p>
           </div>
 
@@ -325,13 +215,17 @@ export function ProductListing() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="bg-transparent">
-                  Sort by: {sortOptions.find((opt) => opt.value === sortBy)?.label}
+                  Sort by:{" "}
+                  {sortOptions.find((opt) => opt.value === sortBy)?.label}
                   <ChevronDown className="h-4 w-4 ml-2" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
                 {sortOptions.map((option) => (
-                  <DropdownMenuItem key={option.value} onClick={() => setSortBy(option.value)}>
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => setSortBy(option.value)}
+                  >
                     {option.label}
                   </DropdownMenuItem>
                 ))}
@@ -344,7 +238,9 @@ export function ProductListing() {
                 variant={viewMode === "grid" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("grid")}
-                className={viewMode === "grid" ? "bg-emerald-600 text-white" : ""}
+                className={
+                  viewMode === "grid" ? "bg-emerald-600 text-white" : ""
+                }
               >
                 <Grid3X3 className="h-4 w-4" />
               </Button>
@@ -352,14 +248,20 @@ export function ProductListing() {
                 variant={viewMode === "list" ? "default" : "ghost"}
                 size="sm"
                 onClick={() => setViewMode("list")}
-                className={viewMode === "list" ? "bg-emerald-600 text-white" : ""}
+                className={
+                  viewMode === "list" ? "bg-emerald-600 text-white" : ""
+                }
               >
                 <List className="h-4 w-4" />
               </Button>
             </div>
 
             {/* Mobile Filter Toggle */}
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)} className="lg:hidden bg-transparent">
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="lg:hidden bg-transparent"
+            >
               <Filter className="h-4 w-4 mr-2" />
               Filters
             </Button>
@@ -368,14 +270,23 @@ export function ProductListing() {
 
         <div className="flex gap-8">
           {/* Filters Sidebar */}
-          <div className={`lg:block ${showFilters ? "block" : "hidden"} w-full lg:w-80 space-y-6`}>
+          <div
+            className={`lg:block ${
+              showFilters ? "block" : "hidden"
+            } w-full lg:w-80 space-y-6`}
+          >
             <Card className="p-6 sticky top-4">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-semibold text-slate-900 flex items-center">
                   <SlidersHorizontal className="h-5 w-5 mr-2 text-emerald-600" />
                   Filters
                 </h3>
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-emerald-600">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  className="text-emerald-600"
+                >
                   Clear All
                 </Button>
               </div>
@@ -385,7 +296,10 @@ export function ProductListing() {
                 <h4 className="font-medium text-slate-900">Category</h4>
                 <div className="space-y-2">
                   {categories.map((category) => (
-                    <label key={category} className="flex items-center space-x-2 cursor-pointer">
+                    <label
+                      key={category}
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
                       <Checkbox
                         checked={selectedCategory === category}
                         onCheckedChange={() => setSelectedCategory(category)}
@@ -402,7 +316,10 @@ export function ProductListing() {
                 <h4 className="font-medium text-slate-900">Brand</h4>
                 <div className="space-y-2 max-h-40 overflow-y-auto">
                   {brands.map((brand) => (
-                    <label key={brand} className="flex items-center space-x-2 cursor-pointer">
+                    <label
+                      key={brand}
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
                       <Checkbox
                         checked={selectedBrand === brand}
                         onCheckedChange={() => setSelectedBrand(brand)}
@@ -438,7 +355,10 @@ export function ProductListing() {
                 <h4 className="font-medium text-slate-900">Minimum Rating</h4>
                 <div className="space-y-2">
                   {[4, 3, 2, 1, 0].map((rating) => (
-                    <label key={rating} className="flex items-center space-x-2 cursor-pointer">
+                    <label
+                      key={rating}
+                      className="flex items-center space-x-2 cursor-pointer"
+                    >
                       <Checkbox
                         checked={minRating === rating}
                         onCheckedChange={() => setMinRating(rating)}
@@ -448,10 +368,16 @@ export function ProductListing() {
                         {[...Array(5)].map((_, i) => (
                           <Star
                             key={i}
-                            className={`h-4 w-4 ${i < rating ? "fill-yellow-400 text-yellow-400" : "text-slate-300"}`}
+                            className={`h-4 w-4 ${
+                              i < rating
+                                ? "fill-yellow-400 text-yellow-400"
+                                : "text-slate-300"
+                            }`}
                           />
                         ))}
-                        <span className="text-sm text-slate-700 ml-1">{rating === 0 ? "All" : `${rating}+ Stars`}</span>
+                        <span className="text-sm text-slate-700 ml-1">
+                          {rating === 0 ? "All" : `${rating}+ Stars`}
+                        </span>
                       </div>
                     </label>
                   ))}
@@ -463,7 +389,9 @@ export function ProductListing() {
                 <label className="flex items-center space-x-2 cursor-pointer">
                   <Checkbox
                     checked={showInStockOnly}
-                    onCheckedChange={(checked) => setShowInStockOnly(checked === true)}
+                    onCheckedChange={(checked) =>
+                      setShowInStockOnly(checked === true)
+                    }
                     className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                   />
                   <span className="text-sm text-slate-700">In Stock Only</span>
@@ -479,9 +407,17 @@ export function ProductListing() {
                 <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Search className="h-8 w-8 text-slate-400" />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">No products found</h3>
-                <p className="text-slate-600 mb-4">Try adjusting your filters or search terms</p>
-                <Button onClick={clearFilters} variant="outline" className="bg-transparent">
+                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                  No products found
+                </h3>
+                <p className="text-slate-600 mb-4">
+                  Try adjusting your filters or search terms
+                </p>
+                <Button
+                  onClick={clearFilters}
+                  variant="outline"
+                  className="bg-transparent"
+                >
                   Clear Filters
                 </Button>
               </div>
@@ -519,10 +455,10 @@ export function ProductListing() {
                                       product.badge === "Best Seller"
                                         ? "bg-emerald-500"
                                         : product.badge === "New"
-                                          ? "bg-blue-500"
-                                          : product.badge === "Sale"
-                                            ? "bg-red-500"
-                                            : "bg-slate-500"
+                                        ? "bg-blue-500"
+                                        : product.badge === "Sale"
+                                        ? "bg-red-500"
+                                        : "bg-slate-500"
                                     } text-white border-0`}
                                   >
                                     {product.badge}
@@ -547,30 +483,43 @@ export function ProductListing() {
                               </div>
                               {!product.inStock && (
                                 <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                  <span className="text-white font-semibold">Out of Stock</span>
+                                  <span className="text-white font-semibold">
+                                    Out of Stock
+                                  </span>
                                 </div>
                               )}
                             </div>
 
                             <div className="p-4">
                               <div className="flex items-center justify-between mb-2">
-                                <span className="text-xs text-slate-500 font-medium">{product.category}</span>
+                                <span className="text-xs text-slate-500 font-medium">
+                                  {product.category}
+                                </span>
                                 <div className="flex items-center space-x-1">
                                   <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                                  <span className="text-xs font-medium">{product.rating}</span>
-                                  <span className="text-xs text-slate-500">({product.reviews})</span>
+                                  <span className="text-xs font-medium">
+                                    {product.rating}
+                                  </span>
+                                  <span className="text-xs text-slate-500">
+                                    ({product.reviews})
+                                  </span>
                                 </div>
                               </div>
 
                               <h3 className="font-semibold text-sm mb-2 text-slate-800 group-hover:text-emerald-700 transition-colors line-clamp-2">
-                                <a href={`/product/${product.id}`} className="hover:underline">
+                                <a
+                                  href={`/product/${product.id}`}
+                                  className="hover:underline"
+                                >
                                   {product.name}
                                 </a>
                               </h3>
 
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-2">
-                                  <span className="text-lg font-bold text-slate-800">${product.price}</span>
+                                  <span className="text-lg font-bold text-slate-800">
+                                    ${product.price}
+                                  </span>
                                   {product.originalPrice > product.price && (
                                     <span className="text-xs text-slate-500 line-through">
                                       ${product.originalPrice}
@@ -580,6 +529,15 @@ export function ProductListing() {
                                 <Button
                                   size="sm"
                                   disabled={!product.inStock}
+                                  onClick={() =>
+                                    addToCart({
+                                      id: product.id,
+                                      name: product.name,
+                                      price: product.price,
+                                      originalPrice: product.originalPrice,
+                                      thumbnail: product.thumbnail,
+                                    })
+                                  }
                                   className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                                 >
                                   <ShoppingCart className="h-3 w-3 mr-1" />
@@ -607,10 +565,10 @@ export function ProductListing() {
                                         product.badge === "Best Seller"
                                           ? "bg-emerald-500"
                                           : product.badge === "New"
-                                            ? "bg-blue-500"
-                                            : product.badge === "Sale"
-                                              ? "bg-red-500"
-                                              : "bg-slate-500"
+                                          ? "bg-blue-500"
+                                          : product.badge === "Sale"
+                                          ? "bg-red-500"
+                                          : "bg-slate-500"
                                       } text-white border-0 text-xs`}
                                     >
                                       {product.badge}
@@ -619,7 +577,9 @@ export function ProductListing() {
                                 )}
                                 {!product.inStock && (
                                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                    <span className="text-white font-semibold text-sm">Out of Stock</span>
+                                    <span className="text-white font-semibold text-sm">
+                                      Out of Stock
+                                    </span>
                                   </div>
                                 )}
                               </div>
@@ -627,26 +587,39 @@ export function ProductListing() {
                               <div className="flex-1 p-4 flex flex-col justify-between">
                                 <div>
                                   <div className="flex items-center justify-between mb-2">
-                                    <span className="text-sm text-slate-500 font-medium">{product.category}</span>
+                                    <span className="text-sm text-slate-500 font-medium">
+                                      {product.category}
+                                    </span>
                                     <div className="flex items-center space-x-1">
                                       <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                      <span className="text-sm font-medium">{product.rating}</span>
-                                      <span className="text-sm text-slate-500">({product.reviews})</span>
+                                      <span className="text-sm font-medium">
+                                        {product.rating}
+                                      </span>
+                                      <span className="text-sm text-slate-500">
+                                        ({product.reviews})
+                                      </span>
                                     </div>
                                   </div>
 
                                   <h3 className="font-semibold text-lg mb-2 text-slate-800 hover:text-emerald-700 transition-colors">
-                                    <a href={`/product/${product.id}`} className="hover:underline">
+                                    <a
+                                      href={`/product/${product.id}`}
+                                      className="hover:underline"
+                                    >
                                       {product.name}
                                     </a>
                                   </h3>
 
-                                  <p className="text-sm text-slate-600 mb-3">Brand: {product.brand}</p>
+                                  <p className="text-sm text-slate-600 mb-3">
+                                    Brand: {product.brand}
+                                  </p>
                                 </div>
 
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center space-x-2">
-                                    <span className="text-2xl font-bold text-slate-800">${product.price}</span>
+                                    <span className="text-2xl font-bold text-slate-800">
+                                      ${product.price}
+                                    </span>
                                     {product.originalPrice > product.price && (
                                       <span className="text-sm text-slate-500 line-through">
                                         ${product.originalPrice}
@@ -691,7 +664,9 @@ export function ProductListing() {
                   <div className="flex items-center justify-center space-x-2 mt-12">
                     <Button
                       variant="outline"
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
                       disabled={currentPage === 1}
                       className="bg-transparent"
                     >
@@ -699,27 +674,42 @@ export function ProductListing() {
                     </Button>
 
                     {[...Array(totalPages)].map((_, i) => {
-                      const page = i + 1
-                      if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                      const page = i + 1;
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
                         return (
                           <Button
                             key={page}
-                            variant={currentPage === page ? "default" : "outline"}
+                            variant={
+                              currentPage === page ? "default" : "outline"
+                            }
                             onClick={() => setCurrentPage(page)}
-                            className={currentPage === page ? "bg-emerald-600 text-white" : "bg-transparent"}
+                            className={
+                              currentPage === page
+                                ? "bg-emerald-600 text-white"
+                                : "bg-transparent"
+                            }
                           >
                             {page}
                           </Button>
-                        )
-                      } else if (page === currentPage - 2 || page === currentPage + 2) {
-                        return <span key={page}>...</span>
+                        );
+                      } else if (
+                        page === currentPage - 2 ||
+                        page === currentPage + 2
+                      ) {
+                        return <span key={page}>...</span>;
                       }
-                      return null
+                      return null;
                     })}
 
                     <Button
                       variant="outline"
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
                       disabled={currentPage === totalPages}
                       className="bg-transparent"
                     >
@@ -733,5 +723,5 @@ export function ProductListing() {
         </div>
       </div>
     </div>
-  )
+  );
 }

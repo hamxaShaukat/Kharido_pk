@@ -32,6 +32,8 @@ import { createClient } from "@/utils/supabase/client";
 import { getSession } from "@/utils/getSession";
 import { UserMetadata } from "@supabase/supabase-js";
 import { signOut } from "@/actions/auth";
+import { useCartTotalItems } from "@/store/use-cart";
+import { CartDropdown } from "./card-dropdown";
 
 // Mock session - replace with your actual auth logic
 const mockSession = {
@@ -48,6 +50,7 @@ export function Navigation() {
   const [userSession, setUserSession] = useState<
     UserMetadata | undefined | null
   >(null);
+  const totalItems = useCartTotalItems();
 
   // Replace this with your actual session logic
   const [session, setSession] = useState<typeof mockSession | null>(null); // Change to mockSession to test logged in state
@@ -67,9 +70,9 @@ export function Navigation() {
   }, []);
 
   const handleLogout = async () => {
-      await signOut();
-      setUserSession(null);
-      router.push("/");
+    await signOut();
+    setUserSession(null);
+    router.push("/");
   };
 
   const userMenuItems = [
@@ -147,8 +150,6 @@ export function Navigation() {
 
           {/* Enhanced Action Buttons */}
           <div className="flex items-center space-x-3">
-         
-
             {/* User Account - Desktop */}
             <motion.div
               whileHover={{ scale: 1.1 }}
@@ -160,7 +161,7 @@ export function Navigation() {
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="flex items-center space-x-2 text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 px-3 py-2"
+                      className="flex items-center space-x-2 text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 px-3 py-2 cursor-pointer"
                     >
                       <Avatar className="h-8 w-8">
                         {userSession.picture ? (
@@ -178,7 +179,10 @@ export function Navigation() {
                           {userSession.name}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-medium">{userSession.name}</span>
+                      <span className="font-medium capitalize">
+                        {userSession.name ||
+                          userSession.firstName + " " + userSession.lastName}
+                      </span>
                       <ChevronDown className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -190,8 +194,9 @@ export function Navigation() {
                       <p className="font-medium text-slate-900 truncate">
                         {userSession.email}
                       </p>
-                      <p className="text-sm text-slate-500">
-                        {userSession.name}
+                      <p className="text-sm text-slate-500 capitalize">
+                        {userSession.name ||
+                          userSession.firstName + " " + userSession.lastName}
                       </p>
                     </div>
                     {userMenuItems.map((item) => (
@@ -227,18 +232,7 @@ export function Navigation() {
             </motion.div>
 
             {/* Enhanced Shopping Cart */}
-            <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="relative text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 group"
-              >
-                <ShoppingCart className="h-5 w-5 group-hover:animate-bounce" />
-                <Badge className="absolute -top-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs h-6 w-6 flex items-center justify-center p-0 border-2 border-white shadow-lg">
-                  3
-                </Badge>
-              </Button>
-            </motion.div>
+            <CartDropdown />
 
             {/* Mobile Menu Button */}
             <Button

@@ -8,7 +8,7 @@ export interface CartItem {
   name: string
   price: number
   originalPrice?: number
-  image: string
+  thumbnail: string
   quantity: number
 }
 
@@ -110,7 +110,12 @@ export const useCartStore = create<CartStore>()(
 
 // Selectors for better performance
 export const useCartItems = () => useCartStore((state) => state.items)
-export const useCartTotalItems = () => useCartStore((state) => state.getTotalItems())
+export const useCartTotalItems = () =>
+  useCartStore((state) => {
+    const items = state.items;
+    return items.reduce((total, item) => total + item.quantity, 0);
+  });
+
 export const useCartTotalPrice = () => useCartStore((state) => state.getTotalPrice())
 export const useCartActions = () =>
   useCartStore((state) => ({

@@ -61,13 +61,7 @@ export function WelcomeSection() {
               Shop Now
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
             </Button>
-            <Button
-              variant="outline"
-              size="lg"
-              className="border-2 border-slate-300 text-slate-700 hover:border-emerald-500 hover:text-emerald-600 px-8 py-3 rounded-full transition-all duration-300 bg-transparent"
-            >
-              Learn More
-            </Button>
+          
           </motion.div>
         </motion.div>
       </div>

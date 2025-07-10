@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Textarea } from "@/components/ui/textarea"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import {
   Star,
   Heart,
@@ -23,36 +23,43 @@ import {
   ThumbsDown,
   Filter,
   ChevronDown,
-} from "lucide-react"
-import Image from "next/image"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+} from "lucide-react";
+import Image from "next/image";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useCartStore } from "@/store/use-cart";
 
 interface Review {
-  id: number
-  userName: string
-  rating: number
-  date: string
-  title: string
-  comment: string
-  verified: boolean
-  helpful: number
-  images?: string[]
+  id: number;
+  userName: string;
+  rating: number;
+  date: string;
+  title: string;
+  comment: string;
+  verified: boolean;
+  helpful: number;
+  images?: string[];
 }
 
 interface Product {
-  id: number
-  name: string
-  price: number
-  originalPrice: number
-  rating: number
-  reviewCount: number
-  images: string[]
-  description: string
-  features: string[]
-  specifications: { [key: string]: string }
-  inStock: boolean
-  category: string
-  brand: string
+  id: number;
+  name: string;
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviewCount: number;
+  thumbnail: string;
+  images: string[];
+  description: string;
+  features: string[];
+  specifications: { [key: string]: string };
+  inStock: boolean;
+  category: string;
+  brand: string;
 }
 
 const mockProduct: Product = {
@@ -62,6 +69,7 @@ const mockProduct: Product = {
   originalPrice: 249.99,
   rating: 4.6,
   reviewCount: 324,
+  thumbnail: "/placeholder.svg?height=300&width=300",
   images: [
     "/placeholder.svg?height=500&width=500",
     "/placeholder.svg?height=500&width=500",
@@ -89,7 +97,7 @@ const mockProduct: Product = {
   inStock: true,
   category: "Electronics",
   brand: "EcoAudio",
-}
+};
 
 const mockReviews: Review[] = [
   {
@@ -137,24 +145,30 @@ const mockReviews: Review[] = [
     verified: true,
     helpful: 12,
   },
-]
+];
 
 export function ProductDetail() {
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [quantity, setQuantity] = useState(1)
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const [reviews, setReviews] = useState<Review[]>(mockReviews)
-  const [showReviewForm, setShowReviewForm] = useState(false)
-  const [reviewFilter, setReviewFilter] = useState("all")
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>(mockReviews);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState("all");
   const [newReview, setNewReview] = useState({
     rating: 0,
     title: "",
     comment: "",
     userName: "",
-  })
-
+  });
+  const addToCart = useCartStore((state) => state.addToCart);
+  const getItemQuantity = useCartStore((state) => state.getItemQuantity);
   const handleAddReview = () => {
-    if (newReview.rating > 0 && newReview.title && newReview.comment && newReview.userName) {
+    if (
+      newReview.rating > 0 &&
+      newReview.title &&
+      newReview.comment &&
+      newReview.userName
+    ) {
       const review: Review = {
         id: reviews.length + 1,
         userName: newReview.userName,
@@ -164,29 +178,31 @@ export function ProductDetail() {
         comment: newReview.comment,
         verified: false,
         helpful: 0,
-      }
-      setReviews([review, ...reviews])
-      setNewReview({ rating: 0, title: "", comment: "", userName: "" })
-      setShowReviewForm(false)
+      };
+      setReviews([review, ...reviews]);
+      setNewReview({ rating: 0, title: "", comment: "", userName: "" });
+      setShowReviewForm(false);
     }
-  }
+  };
 
   const filteredReviews = reviews.filter((review) => {
-    if (reviewFilter === "all") return true
-    if (reviewFilter === "5") return review.rating === 5
-    if (reviewFilter === "4") return review.rating === 4
-    if (reviewFilter === "3") return review.rating === 3
-    if (reviewFilter === "2") return review.rating === 2
-    if (reviewFilter === "1") return review.rating === 1
-    if (reviewFilter === "verified") return review.verified
-    return true
-  })
+    if (reviewFilter === "all") return true;
+    if (reviewFilter === "5") return review.rating === 5;
+    if (reviewFilter === "4") return review.rating === 4;
+    if (reviewFilter === "3") return review.rating === 3;
+    if (reviewFilter === "2") return review.rating === 2;
+    if (reviewFilter === "1") return review.rating === 1;
+    if (reviewFilter === "verified") return review.verified;
+    return true;
+  });
 
   const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
     rating,
     count: reviews.filter((r) => r.rating === rating).length,
-    percentage: (reviews.filter((r) => r.rating === rating).length / reviews.length) * 100,
-  }))
+    percentage:
+      (reviews.filter((r) => r.rating === rating).length / reviews.length) *
+      100,
+  }));
 
   return (
     <div className="min-h-screen bg-white py-8">
@@ -221,7 +237,13 @@ export function ProductDetail() {
                 className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm hover:bg-white"
                 onClick={() => setIsWishlisted(!isWishlisted)}
               >
-                <Heart className={`h-5 w-5 ${isWishlisted ? "fill-red-500 text-red-500" : "text-slate-600"}`} />
+                <Heart
+                  className={`h-5 w-5 ${
+                    isWishlisted
+                      ? "fill-red-500 text-red-500"
+                      : "text-slate-600"
+                  }`}
+                />
               </Button>
             </motion.div>
 
@@ -232,7 +254,9 @@ export function ProductDetail() {
                   key={index}
                   onClick={() => setSelectedImage(index)}
                   className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                    selectedImage === index ? "border-emerald-500" : "border-slate-200"
+                    selectedImage === index
+                      ? "border-emerald-500"
+                      : "border-slate-200"
                   }`}
                 >
                   <Image
@@ -250,42 +274,68 @@ export function ProductDetail() {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <Badge className="bg-emerald-100 text-emerald-700 mb-2">{mockProduct.brand}</Badge>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">{mockProduct.name}</h1>
+              <Badge className="bg-emerald-100 text-emerald-700 mb-2">
+                {mockProduct.brand}
+              </Badge>
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">
+                {mockProduct.name}
+              </h1>
               <div className="flex items-center space-x-4 mb-4">
                 <div className="flex items-center space-x-1">
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
                       className={`h-5 w-5 ${
-                        i < Math.floor(mockProduct.rating) ? "fill-yellow-400 text-yellow-400" : "text-slate-300"
+                        i < Math.floor(mockProduct.rating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-slate-300"
                       }`}
                     />
                   ))}
-                  <span className="text-slate-600 ml-2">{mockProduct.rating}</span>
+                  <span className="text-slate-600 ml-2">
+                    {mockProduct.rating}
+                  </span>
                 </div>
-                <span className="text-slate-500">({mockProduct.reviewCount} reviews)</span>
+                <span className="text-slate-500">
+                  ({mockProduct.reviewCount} reviews)
+                </span>
               </div>
             </div>
 
             {/* Price */}
             <div className="flex items-center space-x-4">
-              <span className="text-3xl font-bold text-slate-900">${mockProduct.price}</span>
-              <span className="text-xl text-slate-500 line-through">${mockProduct.originalPrice}</span>
+              <span className="text-3xl font-bold text-slate-900">
+                ${mockProduct.price}
+              </span>
+              <span className="text-xl text-slate-500 line-through">
+                ${mockProduct.originalPrice}
+              </span>
               <Badge className="bg-red-100 text-red-700">
-                {Math.round(((mockProduct.originalPrice - mockProduct.price) / mockProduct.originalPrice) * 100)}% OFF
+                {Math.round(
+                  ((mockProduct.originalPrice - mockProduct.price) /
+                    mockProduct.originalPrice) *
+                    100
+                )}
+                % OFF
               </Badge>
             </div>
 
             {/* Description */}
-            <p className="text-slate-600 leading-relaxed">{mockProduct.description}</p>
+            <p className="text-slate-600 leading-relaxed">
+              {mockProduct.description}
+            </p>
 
             {/* Features */}
             <div>
-              <h3 className="font-semibold text-slate-900 mb-3">Key Features</h3>
+              <h3 className="font-semibold text-slate-900 mb-3">
+                Key Features
+              </h3>
               <ul className="space-y-2">
                 {mockProduct.features.map((feature, index) => (
-                  <li key={index} className="flex items-center space-x-2 text-slate-600">
+                  <li
+                    key={index}
+                    className="flex items-center space-x-2 text-slate-600"
+                  >
                     <div className="w-2 h-2 bg-emerald-500 rounded-full" />
                     <span>{feature}</span>
                   </li>
@@ -295,33 +345,32 @@ export function ProductDetail() {
 
             {/* Quantity and Add to Cart */}
             <div className="space-y-4">
-              <div className="flex items-center space-x-4">
-                <span className="font-medium text-slate-900">Quantity:</span>
-                <div className="flex items-center border border-slate-300 rounded-lg">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="h-10 w-10"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <span className="px-4 py-2 font-medium">{quantity}</span>
-                  <Button variant="ghost" size="icon" onClick={() => setQuantity(quantity + 1)} className="h-10 w-10">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+             
 
               <div className="flex space-x-4">
                 <Button
+                  onClick={() =>
+                    addToCart({
+                      id: mockProduct.id,
+                      name: mockProduct.name,
+                      price: mockProduct.price,
+                      originalPrice: mockProduct.originalPrice,
+                      thumbnail: mockProduct.thumbnail,
+                  
+                    })
+                  }
                   size="lg"
                   className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl font-semibold"
                 >
                   <ShoppingCart className="h-5 w-5 mr-2" />
                   Add to Cart
+
                 </Button>
-                <Button variant="outline" size="lg" className="px-6 py-3 rounded-xl bg-transparent">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="px-6 py-3 rounded-xl bg-transparent"
+                >
                   <Share2 className="h-5 w-5" />
                 </Button>
               </div>
@@ -357,7 +406,10 @@ export function ProductDetail() {
 
           <div className="grid md:grid-cols-2 gap-8">
             {Object.entries(mockProduct.specifications).map(([key, value]) => (
-              <div key={key} className="flex justify-between py-3 border-b border-slate-100">
+              <div
+                key={key}
+                className="flex justify-between py-3 border-b border-slate-100"
+              >
                 <span className="font-medium text-slate-900">{key}</span>
                 <span className="text-slate-600">{value}</span>
               </div>
@@ -368,7 +420,9 @@ export function ProductDetail() {
         {/* Reviews Section */}
         <div className="space-y-8">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-slate-900">Customer Reviews</h2>
+            <h2 className="text-2xl font-bold text-slate-900">
+              Customer Reviews
+            </h2>
             <Button
               onClick={() => setShowReviewForm(!showReviewForm)}
               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
@@ -380,18 +434,24 @@ export function ProductDetail() {
           {/* Review Summary */}
           <div className="grid md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-4xl font-bold text-slate-900 mb-2">{mockProduct.rating}</div>
+              <div className="text-4xl font-bold text-slate-900 mb-2">
+                {mockProduct.rating}
+              </div>
               <div className="flex items-center justify-center space-x-1 mb-2">
                 {[...Array(5)].map((_, i) => (
                   <Star
                     key={i}
                     className={`h-5 w-5 ${
-                      i < Math.floor(mockProduct.rating) ? "fill-yellow-400 text-yellow-400" : "text-slate-300"
+                      i < Math.floor(mockProduct.rating)
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-slate-300"
                     }`}
                   />
                 ))}
               </div>
-              <p className="text-slate-600">Based on {mockProduct.reviewCount} reviews</p>
+              <p className="text-slate-600">
+                Based on {mockProduct.reviewCount} reviews
+              </p>
             </div>
 
             <div className="md:col-span-2 space-y-2">
@@ -421,35 +481,50 @@ export function ProductDetail() {
               >
                 <Card className="p-6 bg-gradient-to-br from-slate-50 to-emerald-50 border-emerald-200">
                   <CardContent className="space-y-4 p-0">
-                    <h3 className="text-lg font-semibold text-slate-900">Write Your Review</h3>
+                    <h3 className="text-lg font-semibold text-slate-900">
+                      Write Your Review
+                    </h3>
 
                     <div className="grid md:grid-cols-2 gap-4">
                       <Input
                         placeholder="Your name"
                         value={newReview.userName}
-                        onChange={(e) => setNewReview({ ...newReview, userName: e.target.value })}
+                        onChange={(e) =>
+                          setNewReview({
+                            ...newReview,
+                            userName: e.target.value,
+                          })
+                        }
                         className="bg-white"
                       />
                       <Input
                         placeholder="Review title"
                         value={newReview.title}
-                        onChange={(e) => setNewReview({ ...newReview, title: e.target.value })}
+                        onChange={(e) =>
+                          setNewReview({ ...newReview, title: e.target.value })
+                        }
                         className="bg-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Rating</label>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Rating
+                      </label>
                       <div className="flex space-x-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <button
                             key={star}
-                            onClick={() => setNewReview({ ...newReview, rating: star })}
+                            onClick={() =>
+                              setNewReview({ ...newReview, rating: star })
+                            }
                             className="p-1"
                           >
                             <Star
                               className={`h-6 w-6 ${
-                                star <= newReview.rating ? "fill-yellow-400 text-yellow-400" : "text-slate-300"
+                                star <= newReview.rating
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "text-slate-300"
                               }`}
                             />
                           </button>
@@ -460,7 +535,9 @@ export function ProductDetail() {
                     <Textarea
                       placeholder="Share your experience with this product..."
                       value={newReview.comment}
-                      onChange={(e) => setNewReview({ ...newReview, comment: e.target.value })}
+                      onChange={(e) =>
+                        setNewReview({ ...newReview, comment: e.target.value })
+                      }
                       className="min-h-[100px] bg-white"
                     />
 
@@ -471,7 +548,10 @@ export function ProductDetail() {
                       >
                         Submit Review
                       </Button>
-                      <Button variant="outline" onClick={() => setShowReviewForm(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setShowReviewForm(false)}
+                      >
                         Cancel
                       </Button>
                     </div>
@@ -483,7 +563,9 @@ export function ProductDetail() {
 
           {/* Review Filters */}
           <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-slate-700">Filter by:</span>
+            <span className="text-sm font-medium text-slate-700">
+              Filter by:
+            </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" className="capitalize bg-transparent">
@@ -493,13 +575,27 @@ export function ProductDetail() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setReviewFilter("all")}>All Reviews</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("5")}>5 Stars</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("4")}>4 Stars</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("3")}>3 Stars</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("2")}>2 Stars</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("1")}>1 Star</DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("verified")}>Verified Only</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReviewFilter("all")}>
+                  All Reviews
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReviewFilter("5")}>
+                  5 Stars
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReviewFilter("4")}>
+                  4 Stars
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReviewFilter("3")}>
+                  3 Stars
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReviewFilter("2")}>
+                  2 Stars
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReviewFilter("1")}>
+                  1 Star
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setReviewFilter("verified")}>
+                  Verified Only
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -522,9 +618,13 @@ export function ProductDetail() {
                         </div>
                         <div>
                           <div className="flex items-center space-x-2">
-                            <span className="font-medium text-slate-900">{review.userName}</span>
+                            <span className="font-medium text-slate-900">
+                              {review.userName}
+                            </span>
                             {review.verified && (
-                              <Badge className="bg-emerald-100 text-emerald-700 text-xs">Verified Purchase</Badge>
+                              <Badge className="bg-emerald-100 text-emerald-700 text-xs">
+                                Verified Purchase
+                              </Badge>
                             )}
                           </div>
                           <div className="flex items-center space-x-2 mt-1">
@@ -533,19 +633,27 @@ export function ProductDetail() {
                                 <Star
                                   key={i}
                                   className={`h-4 w-4 ${
-                                    i < review.rating ? "fill-yellow-400 text-yellow-400" : "text-slate-300"
+                                    i < review.rating
+                                      ? "fill-yellow-400 text-yellow-400"
+                                      : "text-slate-300"
                                   }`}
                                 />
                               ))}
                             </div>
-                            <span className="text-sm text-slate-500">{review.date}</span>
+                            <span className="text-sm text-slate-500">
+                              {review.date}
+                            </span>
                           </div>
                         </div>
                       </div>
                     </div>
 
-                    <h4 className="font-semibold text-slate-900 mb-2">{review.title}</h4>
-                    <p className="text-slate-600 mb-4 leading-relaxed">{review.comment}</p>
+                    <h4 className="font-semibold text-slate-900 mb-2">
+                      {review.title}
+                    </h4>
+                    <p className="text-slate-600 mb-4 leading-relaxed">
+                      {review.comment}
+                    </p>
 
                     {review.images && (
                       <div className="flex space-x-2 mb-4">
@@ -580,5 +688,5 @@ export function ProductDetail() {
         </div>
       </div>
     </div>
-  )
+  );
 }
