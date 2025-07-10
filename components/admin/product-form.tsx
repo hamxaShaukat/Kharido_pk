@@ -198,23 +198,26 @@ export function ProductForm() {
   };
 
   const uploadImage = async (file: File): Promise<string | null> => {
-    const filePath = `${file.name}-${Date.now()}`;
+  const extension = file.name.split(".").pop(); // jpg, png, etc.
+  const fileName = `${crypto.randomUUID()}.${extension}`; // ✅ safe + valid
+  const filePath = `products/${fileName}`; // optional foldering
 
-    const { error } = await supabase.storage
-      .from("product-images")
-      .upload(filePath, file);
+  const { error } = await supabase.storage
+    .from("products-images")
+    .upload(filePath, file);
 
-    if (error) {
-      console.error("Error uploading image:", error.message);
-      return null;
-    }
+  if (error) {
+    console.error("Error uploading image:", error.message);
+    return null;
+  }
 
-    const { data } = await supabase.storage
-      .from("products-images")
-      .getPublicUrl(filePath);
+  const { data } = await supabase.storage
+    .from("products-images")
+    .getPublicUrl(filePath);
 
-    return data.publicUrl;
-  };
+  return data?.publicUrl ?? null;
+};
+
 
   const removeImage = async (index: number) => {
     const currentImages = getValues("images");
