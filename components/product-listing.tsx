@@ -1,12 +1,12 @@
-"use client"
-import { useState, useMemo, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Input } from "@/components/ui/input"
-import { Slider } from "@/components/ui/slider"
-import { Checkbox } from "@/components/ui/checkbox"
+"use client";
+import { useState, useMemo, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Heart,
   ShoppingCart,
@@ -22,13 +22,19 @@ import {
   Eye,
   X,
   Loader2,
-} from "lucide-react"
-import Image from "next/image"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useCartStore } from "@/store/use-cart"
-import categories from "@/constants/categories"
-import { createClient } from "@/utils/supabase/client"
-import type { Product } from "@/types/product"
+} from "lucide-react";
+import Image from "next/image";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useCartStore } from "@/store/use-cart";
+import categories from "@/constants/categories";
+import { createClient } from "@/utils/supabase/client";
+import type { Product } from "@/types/product";
+import { useSearchParams } from "next/navigation";
 
 const sortOptions = [
   { value: "featured", label: "Featured" },
@@ -36,114 +42,142 @@ const sortOptions = [
   { value: "price-high", label: "Price: High to Low" },
   { value: "newest", label: "Newest First" },
   { value: "name", label: "Name A-Z" },
-]
+];
 
 export function ProductListing() {
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCategory, setSelectedCategory] = useState("All")
-  const [priceRange, setPriceRange] = useState([0, 1000])
-  const [showInStockOnly, setShowInStockOnly] = useState(false)
-  const [sortBy, setSortBy] = useState("featured")
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [showFilters, setShowFilters] = useState(false)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [wishlistedItems, setWishlistedItems] = useState<string[]>([])
-  const [products, setProducts] = useState<Product[]>([])
-  const [loading, setLoading] = useState(true)
-  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
-const [screenWidth, setScreenWidth] = useState(0)
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [priceRange, setPriceRange] = useState([0, 1000]);
+  const [showInStockOnly, setShowInStockOnly] = useState(false);
+  const [sortBy, setSortBy] = useState("featured");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [showFilters, setShowFilters] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [wishlistedItems, setWishlistedItems] = useState<string[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null);
+  const [screenWidth, setScreenWidth] = useState(0);
 
-  const itemsPerPage = 12
-  const addToCart = useCartStore((state) => state.addToCart)
-  const supabase = createClient()
+  const searchParams = useSearchParams();
+  const categoryFromURL = searchParams.get("category");
+
+  const itemsPerPage = 12;
+  const addToCart = useCartStore((state) => state.addToCart);
+  const supabase = createClient();
 
   const filteredAndSortedProducts = useMemo(() => {
     const filtered = products.filter((product) => {
       const matchesSearch =
         product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         product.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        product.description.toLowerCase().includes(searchQuery.toLowerCase())
+        product.description.toLowerCase().includes(searchQuery.toLowerCase());
 
-      const matchesCategory = selectedCategory === "All" || product.category === selectedCategory
+      const matchesCategory =
+        selectedCategory === "All" || product.category === selectedCategory;
 
-      const matchesPrice = product.price >= priceRange[0] && product.price <= priceRange[1]
+      const matchesPrice =
+        product.price >= priceRange[0] && product.price <= priceRange[1];
 
-      const matchesStock = !showInStockOnly || product.stock > 0
+      const matchesStock = !showInStockOnly || product.stock > 0;
 
-      return matchesSearch && matchesCategory && matchesPrice && matchesStock
-    })
+      return matchesSearch && matchesCategory && matchesPrice && matchesStock;
+    });
 
     // Sort products
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "price-low":
-          return a.price - b.price
+          return a.price - b.price;
         case "price-high":
-          return b.price - a.price
+          return b.price - a.price;
         case "newest":
-          return new Date(b.created_at || "").getTime() - new Date(a.created_at || "").getTime()
+          return (
+            new Date(b.created_at || "").getTime() -
+            new Date(a.created_at || "").getTime()
+          );
         case "name":
-          return a.title.localeCompare(b.title)
+          return a.title.localeCompare(b.title);
         case "featured":
         default:
-          return 0
+          return 0;
       }
-    })
+    });
 
-    return filtered
-  }, [products, searchQuery, selectedCategory, priceRange, showInStockOnly, sortBy])
+    return filtered;
+  }, [
+    products,
+    searchQuery,
+    selectedCategory,
+    priceRange,
+    showInStockOnly,
+    sortBy,
+  ]);
 
-  const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredAndSortedProducts.length / itemsPerPage);
   const paginatedProducts = filteredAndSortedProducts.slice(
     (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  )
+    currentPage * itemsPerPage
+  );
 
   const toggleWishlist = (productId: string) => {
     setWishlistedItems((prev) =>
-      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId],
-    )
-  }
+      prev.includes(productId)
+        ? prev.filter((id) => id !== productId)
+        : [...prev, productId]
+    );
+  };
 
   const clearFilters = () => {
-    setSearchQuery("")
-    setSelectedCategory("All")
-    setPriceRange([0, 1000])
-    setShowInStockOnly(false)
-    setCurrentPage(1)
-  }
+    setSearchQuery("");
+    setSelectedCategory("All");
+    setPriceRange([0, 1000]);
+    setShowInStockOnly(false);
+    setCurrentPage(1);
+  };
 
   const fetchProducts = async () => {
     try {
-      setLoading(true)
-      const { data, error } = await supabase.from("products").select("*").order("created_at", { ascending: false })
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-      if (error) throw error
-      setProducts(data || [])
+      if (error) throw error;
+      setProducts(data || []);
     } catch (error) {
-      console.error("Error fetching products:", error)
+      console.error("Error fetching products:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchProducts()
-  }, [])
+    fetchProducts();
+  }, []);
 
   useEffect(() => {
-  setScreenWidth(window.innerWidth)
+    setScreenWidth(window.innerWidth);
 
-  const handleResize = () => {
-    setScreenWidth(window.innerWidth)
+    const handleResize = () => {
+      setScreenWidth(window.innerWidth);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+  if (categoryFromURL) {
+    setSelectedCategory(categoryFromURL)
+    console.log('hey there its category',decodeURIComponent(categoryFromURL))
+    console.log('hey there its category from uri:',categoryFromURL)
   }
-
-  window.addEventListener("resize", handleResize)
-  return () => window.removeEventListener("resize", handleResize)
-}, [])
+}, [categoryFromURL])
 
 
-  const maxPrice = Math.max(...products.map((p) => p.price), 1000)
+  const maxPrice = Math.max(...products.map((p) => p.price), 1000);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/50">
@@ -166,7 +200,8 @@ const [screenWidth, setScreenWidth] = useState(0)
               </span>
             </h1>
             <p className="text-xl text-emerald-100 mb-8 max-w-2xl mx-auto">
-              Explore our curated collection of premium products designed to enhance your lifestyle
+              Explore our curated collection of premium products designed to
+              enhance your lifestyle
             </p>
 
             {/* Enhanced Search Bar */}
@@ -198,7 +233,9 @@ const [screenWidth, setScreenWidth] = useState(0)
               <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Package className="w-6 h-6 text-emerald-600" />
               </div>
-              <p className="text-2xl font-bold text-slate-900">{products.length}</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {products.length}
+              </p>
               <p className="text-sm text-slate-600">Total Products</p>
             </CardContent>
           </Card>
@@ -208,7 +245,9 @@ const [screenWidth, setScreenWidth] = useState(0)
               <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <TrendingUp className="w-6 h-6 text-teal-600" />
               </div>
-              <p className="text-2xl font-bold text-slate-900">{filteredAndSortedProducts.length}</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {filteredAndSortedProducts.length}
+              </p>
               <p className="text-sm text-slate-600">Filtered Results</p>
             </CardContent>
           </Card>
@@ -218,7 +257,9 @@ const [screenWidth, setScreenWidth] = useState(0)
               <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Heart className="w-6 h-6 text-cyan-600" />
               </div>
-              <p className="text-2xl font-bold text-slate-900">{wishlistedItems.length}</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {wishlistedItems.length}
+              </p>
               <p className="text-sm text-slate-600">Wishlist Items</p>
             </CardContent>
           </Card>
@@ -228,7 +269,9 @@ const [screenWidth, setScreenWidth] = useState(0)
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Eye className="w-6 h-6 text-orange-600" />
               </div>
-              <p className="text-2xl font-bold text-slate-900">{categories.length - 1}</p>
+              <p className="text-2xl font-bold text-slate-900">
+                {categories.length - 1}
+              </p>
               <p className="text-sm text-slate-600">Categories</p>
             </CardContent>
           </Card>
@@ -243,7 +286,10 @@ const [screenWidth, setScreenWidth] = useState(0)
         >
           <div className="flex items-center gap-4">
             <h2 className="text-2xl font-bold text-slate-900">Products</h2>
-            <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">
+            <Badge
+              variant="outline"
+              className="bg-emerald-50 text-emerald-700 border-emerald-200"
+            >
               {filteredAndSortedProducts.length} items
             </Badge>
           </div>
@@ -252,14 +298,21 @@ const [screenWidth, setScreenWidth] = useState(0)
             {/* Sort Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white">
+                <Button
+                  variant="outline"
+                  className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white"
+                >
                   Sort: {sortOptions.find((opt) => opt.value === sortBy)?.label}
                   <ChevronDown className="h-4 w-4 ml-2" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="rounded-xl border-0 shadow-2xl bg-white/95 backdrop-blur-sm">
                 {sortOptions.map((option) => (
-                  <DropdownMenuItem key={option.value} onClick={() => setSortBy(option.value)} className="rounded-lg">
+                  <DropdownMenuItem
+                    key={option.value}
+                    onClick={() => setSortBy(option.value)}
+                    className="rounded-lg"
+                  >
                     {option.label}
                   </DropdownMenuItem>
                 ))}
@@ -315,7 +368,9 @@ const [screenWidth, setScreenWidth] = useState(0)
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -300 }}
                 transition={{ duration: 0.3 }}
-                className={`${showFilters ? "block" : "hidden"} lg:block w-full lg:w-80 space-y-6`}
+                className={`${
+                  showFilters ? "block" : "hidden"
+                } lg:block w-full lg:w-80 space-y-6`}
               >
                 <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl sticky top-4">
                   <CardContent className="p-6">
@@ -325,10 +380,20 @@ const [screenWidth, setScreenWidth] = useState(0)
                         Filters
                       </h3>
                       <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={clearFilters} className="text-emerald-600">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={clearFilters}
+                          className="text-emerald-600"
+                        >
                           Clear All
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => setShowFilters(false)} className="lg:hidden">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowFilters(false)}
+                          className="lg:hidden"
+                        >
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
@@ -350,7 +415,9 @@ const [screenWidth, setScreenWidth] = useState(0)
                           >
                             <Checkbox
                               checked={selectedCategory === category}
-                              onCheckedChange={() => setSelectedCategory(category)}
+                              onCheckedChange={() =>
+                                setSelectedCategory(category)
+                              }
                               className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                             />
                             <span className="text-sm text-slate-700 group-hover:text-emerald-600 transition-colors">
@@ -359,7 +426,9 @@ const [screenWidth, setScreenWidth] = useState(0)
                             <span className="text-xs text-slate-400 ml-auto">
                               {category === "All"
                                 ? products.length
-                                : products.filter((p) => p.category === category).length}
+                                : products.filter(
+                                    (p) => p.category === category
+                                  ).length}
                             </span>
                           </motion.label>
                         ))}
@@ -382,8 +451,12 @@ const [screenWidth, setScreenWidth] = useState(0)
                           className="w-full"
                         />
                         <div className="flex justify-between text-sm text-slate-600 mt-3">
-                          <span className="bg-emerald-50 px-2 py-1 rounded-lg font-medium">${priceRange[0]}</span>
-                          <span className="bg-emerald-50 px-2 py-1 rounded-lg font-medium">${priceRange[1]}</span>
+                          <span className="bg-emerald-50 px-2 py-1 rounded-lg font-medium">
+                            ${priceRange[0]}
+                          </span>
+                          <span className="bg-emerald-50 px-2 py-1 rounded-lg font-medium">
+                            ${priceRange[1]}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -401,7 +474,9 @@ const [screenWidth, setScreenWidth] = useState(0)
                       >
                         <Checkbox
                           checked={showInStockOnly}
-                          onCheckedChange={(checked) => setShowInStockOnly(checked === true)}
+                          onCheckedChange={(checked) =>
+                            setShowInStockOnly(checked === true)
+                          }
                           className="data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600"
                         />
                         <span className="text-sm text-slate-700 group-hover:text-emerald-600 transition-colors">
@@ -436,9 +511,12 @@ const [screenWidth, setScreenWidth] = useState(0)
                 <div className="w-32 h-32 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-6">
                   <Search className="h-16 w-16 text-emerald-600" />
                 </div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">No products found</h3>
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">
+                  No products found
+                </h3>
                 <p className="text-slate-600 mb-6 max-w-md mx-auto">
-                  We couldn't find any products matching your criteria. Try adjusting your filters or search terms.
+                  We couldn't find any products matching your criteria. Try
+                  adjusting your filters or search terms.
                 </p>
                 <Button
                   onClick={clearFilters}
@@ -479,53 +557,70 @@ const [screenWidth, setScreenWidth] = useState(0)
                               <div className="relative overflow-hidden rounded-t-xl">
                                 <div className="relative w-full h-72 bg-gradient-to-br from-red-800 via-white to-slate-50">
                                   <Image
-                                    src={product.thumbnail || "/placeholder.svg"}
+                                    src={
+                                      product.thumbnail || "/placeholder.svg"
+                                    }
                                     alt={product.title || "Product Image"}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-700"
                                   />
 
                                   {/* Floating Discount Badge */}
-                                  {product.original_price && product.original_price > product.price && (
-                                    <motion.div
-                                      className="absolute top-4 left-4 z-20"
-                                      initial={{ scale: 0, rotate: -180 }}
-                                      animate={{ scale: 1, rotate: 0 }}
-                                      transition={{ duration: 0.5, delay: index * 0.1 }}
-                                    >
-                                      <div className="relative">
-                                        <Badge className="bg-gradient-to-r from-red-500 via-pink-500 to-red-600 text-white border-0 shadow-2xl px-3 py-1.5 text-sm font-bold">
-                                          {Math.round(
-                                            ((product.original_price - product.price) / product.original_price) * 100,
-                                          )}
-                                          % OFF
-                                        </Badge>
-                                        <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-400 rounded-full blur-md opacity-50 -z-10" />
-                                      </div>
-                                    </motion.div>
-                                  )}
+                                  {product.original_price &&
+                                    product.original_price > product.price && (
+                                      <motion.div
+                                        className="absolute top-4 left-4 z-20"
+                                        initial={{ scale: 0, rotate: -180 }}
+                                        animate={{ scale: 1, rotate: 0 }}
+                                        transition={{
+                                          duration: 0.5,
+                                          delay: index * 0.1,
+                                        }}
+                                      >
+                                        <div className="relative">
+                                          <Badge className="bg-gradient-to-r from-red-500 via-pink-500 to-red-600 text-white border-0 shadow-2xl px-3 py-1.5 text-sm font-bold">
+                                            {Math.round(
+                                              ((product.original_price -
+                                                product.price) /
+                                                product.original_price) *
+                                                100
+                                            )}
+                                            % OFF
+                                          </Badge>
+                                          <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-400 rounded-full blur-md opacity-50 -z-10" />
+                                        </div>
+                                      </motion.div>
+                                    )}
 
                                   {/* Floating Action Buttons */}
                                   <div className="absolute top-4 right-4 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
-                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                                    <motion.div
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.95 }}
+                                    >
                                       <Button
                                         size="icon"
                                         className="bg-white/95 hover:bg-white shadow-2xl backdrop-blur-sm border-0 text-slate-600 hover:text-red-500 transition-colors duration-300"
                                         onClick={(e) => {
-                                          e.stopPropagation()
-                                          toggleWishlist(product.uu_id)
+                                          e.stopPropagation();
+                                          toggleWishlist(product.uu_id);
                                         }}
                                       >
                                         <Heart
                                           className={`h-4 w-4 transition-all duration-300 ${
-                                            wishlistedItems.includes(product.uu_id)
+                                            wishlistedItems.includes(
+                                              product.uu_id
+                                            )
                                               ? "fill-red-500 text-red-500 scale-110"
                                               : "text-slate-600"
                                           }`}
                                         />
                                       </Button>
                                     </motion.div>
-                                    <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                                    <motion.div
+                                      whileHover={{ scale: 1.1 }}
+                                      whileTap={{ scale: 0.95 }}
+                                    >
                                       <Button
                                         size="icon"
                                         className="bg-white/95 hover:bg-white shadow-2xl backdrop-blur-sm border-0 text-slate-600 hover:text-emerald-600 transition-colors duration-300"
@@ -542,7 +637,9 @@ const [screenWidth, setScreenWidth] = useState(0)
                                         <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto">
                                           <Package className="h-8 w-8 text-white" />
                                         </div>
-                                        <span className="text-white font-bold text-lg">Out of Stock</span>
+                                        <span className="text-white font-bold text-lg">
+                                          Out of Stock
+                                        </span>
                                       </div>
                                     </div>
                                   )}
@@ -561,9 +658,15 @@ const [screenWidth, setScreenWidth] = useState(0)
                                   </Badge>
                                   <div className="flex items-center space-x-1.5 bg-slate-50 rounded-full px-3 py-1">
                                     <div
-                                      className={`w-2 h-2 rounded-full ${product.stock > 0 ? "bg-green-500" : "bg-red-500"}`}
+                                      className={`w-2 h-2 rounded-full ${
+                                        product.stock > 0
+                                          ? "bg-green-500"
+                                          : "bg-red-500"
+                                      }`}
                                     />
-                                    <span className="text-xs font-medium text-slate-600">{product.stock} left</span>
+                                    <span className="text-xs font-medium text-slate-600">
+                                      {product.stock} left
+                                    </span>
                                   </div>
                                 </div>
 
@@ -584,33 +687,44 @@ const [screenWidth, setScreenWidth] = useState(0)
                                       <span className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                                         ${product.price}
                                       </span>
-                                      {product.original_price && product.original_price > product.price && (
-                                        <span className="text-sm text-slate-500 line-through">
-                                          ${product.original_price}
-                                        </span>
-                                      )}
+                                      {product.original_price &&
+                                        product.original_price >
+                                          product.price && (
+                                          <span className="text-sm text-slate-500 line-through">
+                                            ${product.original_price}
+                                          </span>
+                                        )}
                                     </div>
-                                    {product.original_price && product.original_price > product.price && (
-                                      <p className="text-xs text-green-600 font-medium">
-                                        Save ${(product.original_price - product.price).toFixed(2)}
-                                      </p>
-                                    )}
+                                    {product.original_price &&
+                                      product.original_price >
+                                        product.price && (
+                                        <p className="text-xs text-green-600 font-medium">
+                                          Save $
+                                          {(
+                                            product.original_price -
+                                            product.price
+                                          ).toFixed(2)}
+                                        </p>
+                                      )}
                                   </div>
 
                                   {/* Add to Cart Button */}
-                                  <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                  <motion.div
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                  >
                                     <Button
                                       size="sm"
                                       disabled={product.stock === 0}
                                       onClick={(e) => {
-                                        e.stopPropagation()
+                                        e.stopPropagation();
                                         addToCart({
                                           id: product.uu_id,
                                           name: product.title,
                                           price: product.price,
                                           originalPrice: product.original_price,
                                           thumbnail: product.thumbnail,
-                                        })
+                                        });
                                       }}
                                       className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 px-6 py-2 font-medium"
                                     >
@@ -635,28 +749,36 @@ const [screenWidth, setScreenWidth] = useState(0)
                                 {/* Image Section */}
                                 <div className="relative w-80 h-48 flex-shrink-0 overflow-hidden">
                                   <Image
-                                    src={product.thumbnail || "/placeholder.svg"}
+                                    src={
+                                      product.thumbnail || "/placeholder.svg"
+                                    }
                                     alt={product.title || "Product Image"}
                                     fill
                                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                                   />
 
                                   {/* Discount Badge */}
-                                  {product.original_price && product.original_price > product.price && (
-                                    <div className="absolute top-4 left-4">
-                                      <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1 font-bold">
-                                        {Math.round(
-                                          ((product.original_price - product.price) / product.original_price) * 100,
-                                        )}
-                                        % OFF
-                                      </Badge>
-                                    </div>
-                                  )}
+                                  {product.original_price &&
+                                    product.original_price > product.price && (
+                                      <div className="absolute top-4 left-4">
+                                        <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1 font-bold">
+                                          {Math.round(
+                                            ((product.original_price -
+                                              product.price) /
+                                              product.original_price) *
+                                              100
+                                          )}
+                                          % OFF
+                                        </Badge>
+                                      </div>
+                                    )}
 
                                   {/* Stock Overlay */}
                                   {product.stock === 0 && (
                                     <div className="absolute inset-0 bg-black/60 flex items-center justify-center backdrop-blur-sm">
-                                      <span className="text-white font-bold text-lg">Out of Stock</span>
+                                      <span className="text-white font-bold text-lg">
+                                        Out of Stock
+                                      </span>
                                     </div>
                                   )}
 
@@ -679,7 +801,11 @@ const [screenWidth, setScreenWidth] = useState(0)
                                       </div>
                                       <div className="flex items-center space-x-2 bg-slate-50 rounded-full px-4 py-2">
                                         <div
-                                          className={`w-2.5 h-2.5 rounded-full ${product.stock > 0 ? "bg-green-500" : "bg-red-500"}`}
+                                          className={`w-2.5 h-2.5 rounded-full ${
+                                            product.stock > 0
+                                              ? "bg-green-500"
+                                              : "bg-red-500"
+                                          }`}
                                         />
 
                                         <span className="text-sm font-medium text-slate-600">
@@ -689,7 +815,9 @@ const [screenWidth, setScreenWidth] = useState(0)
                                     </div>
 
                                     {/* Description */}
-                                    <p className="text-slate-600 leading-relaxed line-clamp-3">{product.description}</p>
+                                    <p className="text-slate-600 leading-relaxed line-clamp-3">
+                                      {product.description}
+                                    </p>
                                   </div>
 
                                   {/* Footer */}
@@ -700,38 +828,56 @@ const [screenWidth, setScreenWidth] = useState(0)
                                         <span className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
                                           ${product.price}
                                         </span>
-                                        {product.original_price && product.original_price > product.price && (
-                                          <span className="text-xl text-slate-500 line-through">
-                                            ${product.original_price}
-                                          </span>
-                                        )}
+                                        {product.original_price &&
+                                          product.original_price >
+                                            product.price && (
+                                            <span className="text-xl text-slate-500 line-through">
+                                              ${product.original_price}
+                                            </span>
+                                          )}
                                       </div>
-                                      {product.original_price && product.original_price > product.price && (
-                                        <p className="text-sm text-green-600 font-medium">
-                                          You save ${(product.original_price - product.price).toFixed(2)}
-                                        </p>
-                                      )}
+                                      {product.original_price &&
+                                        product.original_price >
+                                          product.price && (
+                                          <p className="text-sm text-green-600 font-medium">
+                                            You save $
+                                            {(
+                                              product.original_price -
+                                              product.price
+                                            ).toFixed(2)}
+                                          </p>
+                                        )}
                                     </div>
 
                                     {/* Actions */}
                                     <div className="flex space-x-3">
-                                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                      <motion.div
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                      >
                                         <Button
                                           size="icon"
                                           variant="outline"
-                                          onClick={() => toggleWishlist(product.uu_id)}
+                                          onClick={() =>
+                                            toggleWishlist(product.uu_id)
+                                          }
                                           className="bg-white/80 backdrop-blur-sm border-slate-200 hover:border-red-300 hover:bg-red-50 transition-all duration-300"
                                         >
                                           <Heart
                                             className={`h-5 w-5 transition-all duration-300 ${
-                                              wishlistedItems.includes(product.uu_id)
+                                              wishlistedItems.includes(
+                                                product.uu_id
+                                              )
                                                 ? "fill-red-500 text-red-500"
                                                 : "text-slate-600"
                                             }`}
                                           />
                                         </Button>
                                       </motion.div>
-                                      <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                      <motion.div
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                      >
                                         <Button
                                           disabled={product.stock === 0}
                                           onClick={() =>
@@ -739,7 +885,8 @@ const [screenWidth, setScreenWidth] = useState(0)
                                               id: product.uu_id,
                                               name: product.title,
                                               price: product.price,
-                                              originalPrice: product.original_price,
+                                              originalPrice:
+                                                product.original_price,
                                               thumbnail: product.thumbnail,
                                             })
                                           }
@@ -770,19 +917,27 @@ const [screenWidth, setScreenWidth] = useState(0)
                   >
                     <Button
                       variant="outline"
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.max(1, currentPage - 1))
+                      }
                       disabled={currentPage === 1}
                       className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white"
                     >
                       Previous
                     </Button>
                     {[...Array(totalPages)].map((_, i) => {
-                      const page = i + 1
-                      if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                      const page = i + 1;
+                      if (
+                        page === 1 ||
+                        page === totalPages ||
+                        (page >= currentPage - 1 && page <= currentPage + 1)
+                      ) {
                         return (
                           <Button
                             key={page}
-                            variant={currentPage === page ? "default" : "outline"}
+                            variant={
+                              currentPage === page ? "default" : "outline"
+                            }
                             onClick={() => setCurrentPage(page)}
                             className={
                               currentPage === page
@@ -792,19 +947,24 @@ const [screenWidth, setScreenWidth] = useState(0)
                           >
                             {page}
                           </Button>
-                        )
-                      } else if (page === currentPage - 2 || page === currentPage + 2) {
+                        );
+                      } else if (
+                        page === currentPage - 2 ||
+                        page === currentPage + 2
+                      ) {
                         return (
                           <span key={page} className="text-slate-400">
                             ...
                           </span>
-                        )
+                        );
                       }
-                      return null
+                      return null;
                     })}
                     <Button
                       variant="outline"
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                      onClick={() =>
+                        setCurrentPage(Math.min(totalPages, currentPage + 1))
+                      }
                       disabled={currentPage === totalPages}
                       className="bg-white/80 backdrop-blur-sm border-slate-200 hover:bg-white"
                     >
@@ -818,5 +978,5 @@ const [screenWidth, setScreenWidth] = useState(0)
         </div>
       </div>
     </div>
-  )
+  );
 }

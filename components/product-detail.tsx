@@ -183,7 +183,7 @@ export function ProductDetail() {
           <ChevronRight className="h-4 w-4" />
           <button
             onClick={() =>
-              router.push(`/products?category=${product.category}`)
+              router.push(`/products?category=${encodeURIComponent(product.category)}`)
             }
             className="hover:text-emerald-600 transition-colors"
           >
