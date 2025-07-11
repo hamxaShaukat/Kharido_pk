@@ -4,9 +4,13 @@ import { createClient } from "@/utils/supabase/server";
 
 export async function signInWithGoogle(redirectTo: string) {
   const supabase = await createClient();
-  const redirectURL = `http://localhost:3000/auth/callback?next=${redirectTo}`;
+  const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
+  console.log(baseURL, "🔗 Base URL for Google Sign-In in actions");
+  const redirectURL = `${baseURL}/auth/callback?next=${redirectTo}`;
+   if (!baseURL) {
+    throw new Error("NEXT_PUBLIC_BASE_URL is not set in env");
+  }
 
-  console.log(redirectURL, "🔗 Redirect URL for Google Sign-In in actions");
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
