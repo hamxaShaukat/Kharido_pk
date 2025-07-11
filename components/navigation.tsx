@@ -97,7 +97,7 @@ export function Navigation() {
         <div className="relative z-10 flex items-center justify-center space-x-2">
           <Gift className="h-4 w-4" />
           <span>
-            Free shipping on orders over $50 • Summer Sale: Up to 50% OFF
+            Free shipping on orders over Rs 5000 • Summer Sale: Up to 50% OFF
           </span>
         </div>
       </motion.div>
@@ -115,14 +115,14 @@ export function Navigation() {
               <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 via-teal-500 to-emerald-600 rounded-xl flex items-center justify-center shadow-lg shadow-emerald-500/25 relative overflow-hidden">
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent" />
                 <span className="text-white font-bold text-xl relative z-10">
-                  E
+                  K
                 </span>
               </div>
               <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full animate-pulse" />
             </div>
             <div>
               <span className="text-2xl font-bold bg-gradient-to-r from-slate-800 via-emerald-700 to-slate-800 bg-clip-text text-transparent">
-                EcoStore
+                Kharido-pk
               </span>
               <div className="text-xs text-emerald-600 font-medium -mt-1">
                 Premium • Sustainable

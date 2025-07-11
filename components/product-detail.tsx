@@ -374,12 +374,12 @@ export function ProductDetail() {
                   <div className="space-y-2">
                     <div className="flex items-center space-x-4">
                       <span className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-emerald-700 bg-clip-text text-transparent">
-                        ${product.price.toFixed(2)}
+                        Rs {product.price.toFixed(2)}
                       </span>
                       {product.original_price &&
                         product.original_price > product.price && (
                           <span className="text-2xl text-slate-500 line-through">
-                            ${product.original_price.toFixed(2)}
+                            Rs {product.original_price.toFixed(2)}
                           </span>
                         )}
                     </div>
@@ -387,7 +387,7 @@ export function ProductDetail() {
                       product.original_price > product.price && (
                         <p className="text-green-600 font-semibold flex items-center">
                           <Sparkles className="w-4 h-4 mr-1" />
-                          You save $
+                          You save Rs 
                           {(product.original_price - product.price).toFixed(2)}
                         </p>
                       )}
@@ -489,7 +489,7 @@ export function ProductDetail() {
                   Free Shipping
                 </span>
                 <span className="text-xs text-slate-500">
-                  On orders over $50
+                  On orders over Rs 5000
                 </span>
               </motion.div>
               <motion.div
@@ -500,7 +500,7 @@ export function ProductDetail() {
                   <RotateCcw className="h-6 w-6 text-teal-600" />
                 </div>
                 <span className="text-sm font-medium text-slate-700">
-                  30-Day Returns
+                  7-Day Returns
                 </span>
                 <span className="text-xs text-slate-500">
                   Hassle-free returns
@@ -596,7 +596,7 @@ export function ProductDetail() {
                   <div className="flex justify-between items-center">
                     <span className="text-slate-700">Current Price</span>
                     <span className="text-2xl font-bold text-emerald-600">
-                      ${product.price.toFixed(2)}
+                      Rs {product.price.toFixed(2)}
                     </span>
                   </div>
                   {product.original_price && (
@@ -604,13 +604,13 @@ export function ProductDetail() {
                       <div className="flex justify-between items-center">
                         <span className="text-slate-700">Original Price</span>
                         <span className="text-lg text-slate-500 line-through">
-                          ${product.original_price.toFixed(2)}
+                          Rs {product.original_price.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="text-slate-700">You Save</span>
                         <span className="text-lg font-semibold text-green-600">
-                          ${(product.original_price - product.price).toFixed(2)}{" "}
+                          Rs {(product.original_price - product.price).toFixed(2)}{" "}
                           ({discountPercentage}%)
                         </span>
                       </div>

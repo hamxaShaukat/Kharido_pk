@@ -358,8 +358,8 @@ export function ProductForm() {
                       <p className="text-sm text-slate-600">Price Set</p>
                       <p className="text-xl font-bold text-slate-900">
                         {watchedValues.price > 0
-                          ? `$${watchedValues.price.toFixed(2)}`
-                          : "$0.00"}
+                          ? `Rs ${watchedValues.price.toFixed(2)}`
+                          : "Rs 0"}
                       </p>
                     </div>
                   </div>
@@ -677,7 +677,7 @@ export function ProductForm() {
                                 <div className="flex items-center justify-between">
                                   <div className="flex items-center space-x-4">
                                     <span className="text-3xl font-bold text-emerald-700">
-                                      ${watchedValues.price.toFixed(2)}
+                                      Rs {watchedValues.price.toFixed(2)}
                                     </span>
                                     {watchedValues.original_price &&
                                       watchedValues.original_price >
@@ -1090,12 +1090,12 @@ export function ProductForm() {
                       {/* Price */}
                       <div className="flex items-center gap-2">
                         <span className="text-2xl font-bold text-emerald-600">
-                          ${watchedValues.price.toFixed(2)}
+                          Rs {watchedValues.price.toFixed(2)}
                         </span>
                         {watchedValues.original_price &&
                           watchedValues.original_price > watchedValues.price && (
                             <span className="text-sm text-slate-500 line-through">
-                              ${watchedValues.original_price.toFixed(2)}
+                              Rs {watchedValues.original_price.toFixed(2)}
                             </span>
                           )}
                       </div>

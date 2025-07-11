@@ -454,10 +454,10 @@ export function ProductListing() {
                         />
                         <div className="flex justify-between text-sm text-slate-600 mt-3">
                           <span className="bg-emerald-50 px-2 py-1 rounded-lg font-medium">
-                            ${priceRange[0]}
+                            Rs {priceRange[0]}
                           </span>
                           <span className="bg-emerald-50 px-2 py-1 rounded-lg font-medium">
-                            ${priceRange[1]}
+                            Rs {priceRange[1]}
                           </span>
                         </div>
                       </div>
@@ -687,13 +687,13 @@ export function ProductListing() {
                                   <div className="space-y-1">
                                     <div className="flex items-center space-x-2">
                                       <span className="text-2xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                                        ${product.price}
+                                        Rs {product.price}
                                       </span>
                                       {product.original_price &&
                                         product.original_price >
                                           product.price && (
                                           <span className="text-sm text-slate-500 line-through">
-                                            ${product.original_price}
+                                            Rs {product.original_price}
                                           </span>
                                         )}
                                     </div>
@@ -701,8 +701,8 @@ export function ProductListing() {
                                       product.original_price >
                                         product.price && (
                                         <p className="text-xs text-green-600 font-medium">
-                                          Save $
-                                          {(
+                                          Save Rs 
+                                           {(
                                             product.original_price -
                                             product.price
                                           ).toFixed(2)}
@@ -828,13 +828,13 @@ export function ProductListing() {
                                     <div className="space-y-2">
                                       <div className="flex items-center space-x-3">
                                         <span className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                                          ${product.price}
+                                          Rs {product.price}
                                         </span>
                                         {product.original_price &&
                                           product.original_price >
                                             product.price && (
                                             <span className="text-xl text-slate-500 line-through">
-                                              ${product.original_price}
+                                              Rs {product.original_price}
                                             </span>
                                           )}
                                       </div>
@@ -842,7 +842,7 @@ export function ProductListing() {
                                         product.original_price >
                                           product.price && (
                                           <p className="text-sm text-green-600 font-medium">
-                                            You save $
+                                            You save Rs 
                                             {(
                                               product.original_price -
                                               product.price

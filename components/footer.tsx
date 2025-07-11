@@ -1,39 +1,37 @@
-"use client"
-import { motion } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
-import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Heart, Leaf, Truck, Shield, RotateCcw } from "lucide-react"
-import Link from "next/link"
+"use client";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import {
+  Facebook,
+  Twitter,
+  Instagram,
+  Mail,
+  Phone,
+  MapPin,
+  Heart,
+  Leaf,
+  Truck,
+  Shield,
+  RotateCcw,
+} from "lucide-react";
+import Link from "next/link";
+import categories from "@/constants/categories";
 
 export function Footer() {
-  const productCategories = [
-    "Electronics",
-    "Fashion",
-    "Home & Garden",
-    "Sports & Fitness",
-    "Books & Media",
-    "Beauty & Personal Care",
-  ]
-
   const quickLinks = [
     { name: "Contact Us", href: "/contact-us" },
     { name: "About Us", href: "/about-us" },
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Terms of Service", href: "/terms" },
-  ]
-
-  const socialLinks = [
-    { icon: Facebook, href: "#", label: "Facebook" },
-    { icon: Twitter, href: "#", label: "Twitter" },
-    { icon: Instagram, href: "#", label: "Instagram" },
-  ]
+  ];
 
   const features = [
-    { icon: Truck, title: "Free Shipping", desc: "On orders over $50" },
-    { icon: RotateCcw, title: "Easy Returns", desc: "30-day return policy" },
+    { icon: Truck, title: "Free Shipping", desc: "On orders over Rs 5000" },
+    { icon: RotateCcw, title: "Easy Returns", desc: "7-day return policy" },
     { icon: Shield, title: "Secure Payment", desc: "100% protected" },
-  ]
+  ];
 
   return (
     <footer className="bg-gradient-to-br from-slate-900 via-slate-800 to-emerald-900 text-white relative overflow-hidden">
@@ -87,14 +85,17 @@ export function Footer() {
                 </div>
                 <div>
                   <span className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
-                    EcoStore
+                    Kharido-pk
                   </span>
-                  <div className="text-xs text-emerald-400 font-medium -mt-1">Premium • Sustainable</div>
+                  <div className="text-xs text-emerald-400 font-medium -mt-1">
+                    Premium • Sustainable
+                  </div>
                 </div>
               </div>
               <p className="text-slate-300 mb-6 leading-relaxed">
-                Discover premium, eco-friendly products that make a difference. We're committed to sustainability
-                without compromising on quality or style.
+                Discover premium, eco-friendly products that make a difference.
+                We're committed to sustainability without compromising on
+                quality or style.
               </p>
 
               {/* Newsletter Signup */}
@@ -122,7 +123,9 @@ export function Footer() {
               transition={{ duration: 0.6, delay: 0.1 }}
               viewport={{ once: true }}
             >
-              <h3 className="font-semibold text-lg mb-6 text-emerald-200">Shop by Category</h3>
+              <h3 className="font-semibold text-lg mb-6 text-emerald-200">
+                Shop by Category
+              </h3>
               <ul className="space-y-3">
                 <li>
                   <Link
@@ -132,10 +135,12 @@ export function Footer() {
                     All Products
                   </Link>
                 </li>
-                {productCategories.map((category) => (
+                {categories.slice(0, 5).map((category) => (
                   <li key={category}>
                     <Link
-                      href={`/products?category=${encodeURIComponent(category)}`}
+                      href={`/products?category=${encodeURIComponent(
+                        category
+                      )}`}
                       className="text-slate-300 hover:text-emerald-400 transition-colors duration-200 text-sm hover:translate-x-1 inline-block"
                     >
                       {category}
@@ -152,7 +157,9 @@ export function Footer() {
               transition={{ duration: 0.6, delay: 0.2 }}
               viewport={{ once: true }}
             >
-              <h3 className="font-semibold text-lg mb-6 text-emerald-200">Quick Links</h3>
+              <h3 className="font-semibold text-lg mb-6 text-emerald-200">
+                Quick Links
+              </h3>
               <ul className="space-y-3">
                 {quickLinks.map((link) => (
                   <li key={link.name}>
@@ -174,22 +181,22 @@ export function Footer() {
               transition={{ duration: 0.6, delay: 0.3 }}
               viewport={{ once: true }}
             >
-              <h3 className="font-semibold text-lg mb-6 text-emerald-200">Get in Touch</h3>
+              <h3 className="font-semibold text-lg mb-6 text-emerald-200">
+                Get in Touch
+              </h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-3 text-slate-300">
                   <Phone className="h-4 w-4 text-emerald-400" />
-                  <span className="text-sm">+1 (555) 123-4567</span>
+                  <span className="text-sm">+92 (327) 456-2696</span>
                 </div>
                 <div className="flex items-center space-x-3 text-slate-300">
                   <Mail className="h-4 w-4 text-emerald-400" />
-                  <span className="text-sm">hello@ecostore.com</span>
+                  <span className="text-sm">kharido-pk@gmail.com</span>
                 </div>
                 <div className="flex items-center space-x-3 text-slate-300">
                   <MapPin className="h-4 w-4 text-emerald-400" />
-                  <span className="text-sm">123 Green Street, Eco City</span>
+                  <span className="text-sm">Lahore, Pakistan</span>
                 </div>
-
-               
               </div>
             </motion.div>
           </div>
@@ -206,7 +213,7 @@ export function Footer() {
                 viewport={{ once: true }}
                 className="text-slate-400 text-sm flex items-center space-x-2"
               >
-                <span>© 2024 EcoStore. Made with</span>
+                <span>© 2025 Kharido-pk. Made with</span>
                 <Heart className="h-4 w-4 text-red-500 fill-current" />
                 <span>for a sustainable future.</span>
               </motion.p>
@@ -218,7 +225,10 @@ export function Footer() {
                 className="flex items-center space-x-4 text-sm text-slate-400"
               >
                 <span>🌱 Carbon Neutral Shipping</span>
-                <Separator orientation="vertical" className="h-4 bg-slate-600" />
+                <Separator
+                  orientation="vertical"
+                  className="h-4 bg-slate-600"
+                />
                 <span>♻️ Eco-Friendly Packaging</span>
               </motion.div>
             </div>
@@ -226,5 +236,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

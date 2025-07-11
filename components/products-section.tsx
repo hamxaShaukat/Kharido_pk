@@ -336,16 +336,16 @@ export function ProductsSection() {
                             <div className="space-y-1">
                               <div className="flex items-center space-x-3">
                                 <span className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
-                                  ${product.price}
+                                  Rs {product.price}
                                 </span>
                                 {product.original_price && product.original_price > product.price && (
-                                  <span className="text-lg text-slate-500 line-through">${product.original_price}</span>
+                                  <span className="text-lg text-slate-500 line-through">Rs {product.original_price}</span>
                                 )}
                               </div>
                               {product.original_price && product.original_price > product.price && (
                                 <p className="text-sm text-green-600 font-medium flex items-center">
                                   <Zap className="w-3 h-3 mr-1" />
-                                  Save ${(product.original_price - product.price).toFixed(2)}
+                                  Save Rs {(product.original_price - product.price).toFixed(2)}
                                 </p>
                               )}
                             </div>
