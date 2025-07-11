@@ -1,45 +1,38 @@
 "use client"
-
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import {
-  Facebook,
-  Twitter,
-  Instagram,
-  Youtube,
-  Mail,
-  Phone,
-  MapPin,
-  CreditCard,
-  Shield,
-  Truck,
-  RotateCcw,
-  Heart,
-  Leaf,
-} from "lucide-react"
+import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Heart, Leaf, Truck, Shield, RotateCcw } from "lucide-react"
+import Link from "next/link"
 
 export function Footer() {
-  const footerLinks = {
-    shop: ["All Products", "Electronics", "Fashion", "Home & Garden", "Sports & Outdoors", "Books & Media"],
-    support: ["Help Center", "Contact Us", "Shipping Info", "Returns", "Size Guide", "Track Order"],
-    company: ["About Us", "Careers", "Press", "Sustainability", "Affiliate Program", "Wholesale"],
-    legal: ["Privacy Policy", "Terms of Service", "Cookie Policy", "Accessibility", "Sitemap", "Legal Notice"],
-  }
+  const productCategories = [
+    "Electronics",
+    "Fashion",
+    "Home & Garden",
+    "Sports & Fitness",
+    "Books & Media",
+    "Beauty & Personal Care",
+  ]
+
+  const quickLinks = [
+    { name: "Contact Us", href: "/contact-us" },
+    { name: "About Us", href: "/about-us" },
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms of Service", href: "/terms" },
+  ]
 
   const socialLinks = [
     { icon: Facebook, href: "#", label: "Facebook" },
     { icon: Twitter, href: "#", label: "Twitter" },
     { icon: Instagram, href: "#", label: "Instagram" },
-    { icon: Youtube, href: "#", label: "YouTube" },
   ]
 
   const features = [
     { icon: Truck, title: "Free Shipping", desc: "On orders over $50" },
     { icon: RotateCcw, title: "Easy Returns", desc: "30-day return policy" },
     { icon: Shield, title: "Secure Payment", desc: "100% protected" },
-    { icon: Leaf, title: "Eco-Friendly", desc: "Sustainable products" },
   ]
 
   return (
@@ -54,7 +47,7 @@ export function Footer() {
         {/* Features Section */}
         <div className="border-b border-slate-700/50">
           <div className="container mx-auto px-4 py-12">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {features.map((feature, index) => (
                 <motion.div
                   key={feature.title}
@@ -79,18 +72,18 @@ export function Footer() {
 
         {/* Main Footer Content */}
         <div className="container mx-auto px-4 py-16">
-          <div className="grid grid-cols-1 lg:grid-cols-6 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
             {/* Company Info */}
             <motion.div
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="lg:col-span-2"
+              className="lg:col-span-1"
             >
               <div className="flex items-center space-x-3 mb-6">
                 <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-white font-bold text-xl">E</span>
+                  <Leaf className="h-6 w-6 text-white" />
                 </div>
                 <div>
                   <span className="text-2xl font-bold bg-gradient-to-r from-white to-emerald-200 bg-clip-text text-transparent">
@@ -99,7 +92,6 @@ export function Footer() {
                   <div className="text-xs text-emerald-400 font-medium -mt-1">Premium • Sustainable</div>
                 </div>
               </div>
-
               <p className="text-slate-300 mb-6 leading-relaxed">
                 Discover premium, eco-friendly products that make a difference. We're committed to sustainability
                 without compromising on quality or style.
@@ -120,53 +112,70 @@ export function Footer() {
                     Subscribe
                   </Button>
                 </div>
-                <p className="text-xs text-slate-400">
-                  Get exclusive deals and sustainability tips. Unsubscribe anytime.
-                </p>
               </div>
             </motion.div>
 
-            {/* Footer Links */}
-            {Object.entries(footerLinks).map(([category, links], index) => (
-              <motion.div
-                key={category}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <h3 className="font-semibold text-lg mb-6 capitalize text-emerald-200">
-                  {category === "legal" ? "Legal" : category}
-                </h3>
-                <ul className="space-y-3">
-                  {links.map((link) => (
-                    <li key={link}>
-                      <a
-                        href="#"
-                        className="text-slate-300 hover:text-emerald-400 transition-colors duration-200 text-sm hover:translate-x-1 inline-block"
-                      >
-                        {link}
-                      </a>
-                    </li>
-                  ))}
-                </ul>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+            {/* Product Categories */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="font-semibold text-lg mb-6 text-emerald-200">Shop by Category</h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="/products"
+                    className="text-slate-300 hover:text-emerald-400 transition-colors duration-200 text-sm hover:translate-x-1 inline-block"
+                  >
+                    All Products
+                  </Link>
+                </li>
+                {productCategories.map((category) => (
+                  <li key={category}>
+                    <Link
+                      href={`/products?category=${encodeURIComponent(category)}`}
+                      className="text-slate-300 hover:text-emerald-400 transition-colors duration-200 text-sm hover:translate-x-1 inline-block"
+                    >
+                      {category}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
 
-        {/* Contact & Social Section */}
-        <div className="border-t border-slate-700/50">
-          <div className="container mx-auto px-4 py-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 items-center">
-              {/* Contact Info */}
-              <motion.div
-                initial={{ opacity: 0, x: -30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6 }}
-                viewport={{ once: true }}
-                className="space-y-3"
-              >
+            {/* Quick Links */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="font-semibold text-lg mb-6 text-emerald-200">Quick Links</h3>
+              <ul className="space-y-3">
+                {quickLinks.map((link) => (
+                  <li key={link.name}>
+                    <Link
+                      href={link.href}
+                      className="text-slate-300 hover:text-emerald-400 transition-colors duration-200 text-sm hover:translate-x-1 inline-block"
+                    >
+                      {link.name}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Contact Info */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+            >
+              <h3 className="font-semibold text-lg mb-6 text-emerald-200">Get in Touch</h3>
+              <div className="space-y-4">
                 <div className="flex items-center space-x-3 text-slate-300">
                   <Phone className="h-4 w-4 text-emerald-400" />
                   <span className="text-sm">+1 (555) 123-4567</span>
@@ -179,53 +188,10 @@ export function Footer() {
                   <MapPin className="h-4 w-4 text-emerald-400" />
                   <span className="text-sm">123 Green Street, Eco City</span>
                 </div>
-              </motion.div>
 
-              {/* Social Links */}
-              <motion.div
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-                className="flex justify-center md:justify-start"
-              >
-                <div className="flex space-x-4">
-                  {socialLinks.map((social) => (
-                    <Button
-                      key={social.label}
-                      variant="ghost"
-                      size="icon"
-                      className="text-slate-400 hover:text-white hover:bg-gradient-to-r hover:from-emerald-600 hover:to-teal-600 rounded-xl transition-all duration-300 hover:scale-110"
-                      aria-label={social.label}
-                    >
-                      <social.icon className="h-5 w-5" />
-                    </Button>
-                  ))}
-                </div>
-              </motion.div>
-
-              {/* Payment Methods */}
-              <motion.div
-                initial={{ opacity: 0, x: 30 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-                className="flex justify-center md:justify-end items-center space-x-4"
-              >
-                <span className="text-sm text-slate-400">We Accept:</span>
-                <div className="flex space-x-2">
-                  <div className="w-8 h-6 bg-gradient-to-r from-blue-600 to-blue-700 rounded flex items-center justify-center">
-                    <CreditCard className="h-3 w-3 text-white" />
-                  </div>
-                  <div className="w-8 h-6 bg-gradient-to-r from-red-600 to-red-700 rounded flex items-center justify-center">
-                    <CreditCard className="h-3 w-3 text-white" />
-                  </div>
-                  <div className="w-8 h-6 bg-gradient-to-r from-yellow-500 to-yellow-600 rounded flex items-center justify-center">
-                    <CreditCard className="h-3 w-3 text-white" />
-                  </div>
-                </div>
-              </motion.div>
-            </div>
+               
+              </div>
+            </motion.div>
           </div>
         </div>
 
@@ -244,7 +210,6 @@ export function Footer() {
                 <Heart className="h-4 w-4 text-red-500 fill-current" />
                 <span>for a sustainable future.</span>
               </motion.p>
-
               <motion.div
                 initial={{ opacity: 0 }}
                 whileInView={{ opacity: 1 }}

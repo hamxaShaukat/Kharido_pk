@@ -169,13 +169,15 @@ export function ProductListing() {
   }, []);
 
   useEffect(() => {
-  if (categoryFromURL) {
-    setSelectedCategory(categoryFromURL)
-    console.log('hey there its category',decodeURIComponent(categoryFromURL))
-    console.log('hey there its category from uri:',categoryFromURL)
-  }
-}, [categoryFromURL])
-
+    if (categoryFromURL) {
+      setSelectedCategory(categoryFromURL);
+      console.log(
+        "hey there its category",
+        decodeURIComponent(categoryFromURL)
+      );
+      console.log("hey there its category from uri:", categoryFromURL);
+    }
+  }, [categoryFromURL]);
 
   const maxPrice = Math.max(...products.map((p) => p.price), 1000);
 

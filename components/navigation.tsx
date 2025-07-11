@@ -219,7 +219,7 @@ export function Navigation() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300"
+                  className="text-slate-700 hover:text-emerald-600 hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 rounded-xl transition-all duration-300 cursor-pointer"
                   onClick={handleLogin}
                 >
                   <User className="h-5 w-5" />
