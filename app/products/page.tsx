@@ -1,7 +1,8 @@
-import { Footer } from "@/components/footer"
-import { Navigation } from "@/components/navigation"
-import { NewsletterPopup } from "@/components/newsletter-popup"
-import { ProductListing } from "@/components/product-listing"
+import { Footer } from "@/components/footer";
+import { Navigation } from "@/components/navigation";
+import { NewsletterPopup } from "@/components/newsletter-popup";
+import { ProductListing } from "@/components/product-listing";
+import { Suspense } from "react";
 
 export default function ProductsPage() {
   return (
@@ -9,10 +10,14 @@ export default function ProductsPage() {
       {/* <BackgroundBlobs /> */}
       <div className="relative z-10">
         <Navigation />
-        <ProductListing />
+        <Suspense
+          fallback={<div className="text-center py-8">Loading products…</div>}
+        >
+          <ProductListing />
+        </Suspense>
         <Footer />
       </div>
       <NewsletterPopup />
     </div>
-  )
+  );
 }
