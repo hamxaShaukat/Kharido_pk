@@ -64,11 +64,11 @@ export function ProductForm() {
   const form = useForm<ProductFormData>({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      actualId: "",
-      name: "",
+      actual_id: "",
+      title: "",
       description: "",
       price: 0,
-      originalPrice: undefined,
+      original_price: undefined,
       thumbnail: "",
       images: [],
       category: "",
@@ -184,17 +184,17 @@ export function ProductForm() {
     setIsLoading(true);
     try {
       const { error } = await supabase.from("products").insert({
-        actual_id: data.actualId,
+        actual_id: data.actual_id,
 
         price: data.price,
 
         category: data.category,
 
-        title: data.name,
+        title: data.title,
 
         description: data.description,
 
-        original_price: data.originalPrice || null,
+        original_price: data.original_price || null,
 
         thumbnail: data.thumbnail,
 
@@ -231,17 +231,17 @@ export function ProductForm() {
   };
 
   const discountPercentage =
-    watchedValues.originalPrice && watchedValues.price
+    watchedValues.original_price && watchedValues.price
       ? Math.round(
-          ((watchedValues.originalPrice - watchedValues.price) /
-            watchedValues.originalPrice) *
+          ((watchedValues.original_price - watchedValues.price) /
+            watchedValues.original_price) *
             100
         )
       : 0;
 
   const completionPercentage = () => {
     const fields = [
-      watchedValues.name,
+      watchedValues.title,
       watchedValues.description,
       watchedValues.price > 0,
       watchedValues.thumbnail,
@@ -456,7 +456,7 @@ export function ProductForm() {
                           <div className="grid grid-cols-2 gap-4">
                             <FormField
                               control={form.control}
-                              name="actualId"
+                              name="actual_id"
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-slate-700 font-medium">
@@ -510,7 +510,7 @@ export function ProductForm() {
 
                           <FormField
                             control={form.control}
-                            name="name"
+                            name="title"
                             render={({ field }) => (
                               <FormItem>
                                 <FormLabel className="text-slate-700 font-medium">
@@ -602,7 +602,7 @@ export function ProductForm() {
 
                             <FormField
                               control={form.control}
-                              name="originalPrice"
+                              name="original_price"
                               render={({ field }) => (
                                 <FormItem>
                                   <FormLabel className="text-slate-700 font-medium">
@@ -667,7 +667,7 @@ export function ProductForm() {
                           {/* Price Preview */}
                           <AnimatePresence>
                             {(watchedValues.price > 0 ||
-                              watchedValues.originalPrice) && (
+                              watchedValues.original_price) && (
                               <motion.div
                                 initial={{ opacity: 0, height: 0 }}
                                 animate={{ opacity: 1, height: "auto" }}
@@ -679,13 +679,13 @@ export function ProductForm() {
                                     <span className="text-3xl font-bold text-emerald-700">
                                       ${watchedValues.price.toFixed(2)}
                                     </span>
-                                    {watchedValues.originalPrice &&
-                                      watchedValues.originalPrice >
+                                    {watchedValues.original_price &&
+                                      watchedValues.original_price >
                                         watchedValues.price && (
                                         <>
                                           <span className="text-xl text-slate-500 line-through">
-                                            $
-                                            {watchedValues.originalPrice.toFixed(
+                                            Rs
+                                            {watchedValues.original_price.toFixed(
                                               2
                                             )}
                                           </span>
@@ -1073,7 +1073,7 @@ export function ProductForm() {
                     <div className="space-y-3">
                       <div>
                         <h4 className="font-bold text-slate-800 text-lg">
-                          {watchedValues.name || "Product Name"}
+                          {watchedValues.title || "Product Name"}
                         </h4>
                         {watchedValues.category && (
                           <Badge variant="outline" className="mt-1 text-xs">
@@ -1092,10 +1092,10 @@ export function ProductForm() {
                         <span className="text-2xl font-bold text-emerald-600">
                           ${watchedValues.price.toFixed(2)}
                         </span>
-                        {watchedValues.originalPrice &&
-                          watchedValues.originalPrice > watchedValues.price && (
+                        {watchedValues.original_price &&
+                          watchedValues.original_price > watchedValues.price && (
                             <span className="text-sm text-slate-500 line-through">
-                              ${watchedValues.originalPrice.toFixed(2)}
+                              ${watchedValues.original_price.toFixed(2)}
                             </span>
                           )}
                       </div>
@@ -1128,7 +1128,7 @@ export function ProductForm() {
                       <div className="flex items-center gap-2">
                         <CheckCircle2
                           className={`h-4 w-4 ${
-                            watchedValues.name
+                            watchedValues.title
                               ? "text-green-500"
                               : "text-slate-300"
                           }`}

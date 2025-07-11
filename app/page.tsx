@@ -1,11 +1,9 @@
 'use client'
-import { Navigation } from "@/components/navigation"
-import { WelcomeSection } from "@/components/welcome-section"
-import { BannerSection } from "@/components/banner-section"
-import { ProductsSection } from "@/components/products-section"
-import { BackgroundBlobs } from "@/components/background-blobs"
 import { Footer } from "@/components/footer"
+import { Navigation } from "@/components/navigation"
 import { NewsletterPopup } from "@/components/newsletter-popup"
+import { ProductsSection } from "@/components/products-section"
+import { WelcomeSection } from "@/components/welcome-section"
 
 export default function HomePage() {
   return (

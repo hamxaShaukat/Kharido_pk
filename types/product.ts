@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const productSchema = z
   .object({
-    actualId: z
+    actual_id: z
       .string()
       .min(1, "Product ID is required")
       .min(3, "Product ID must be at least 3 characters")
@@ -14,7 +14,7 @@ const productSchema = z
         "Product ID can only contain letters, numbers, hyphens, and underscores"
       )
       .transform((val) => val.toLowerCase()),
-    name: z
+    title: z
       .string()
       .min(1, "Product name is required")
       .min(2, "Product name must be at least 2 characters")
@@ -30,7 +30,7 @@ const productSchema = z
       .number({ invalid_type_error: "Price must be a valid number" })
       .min(1, "Price must be greater than $0.00")
       .max(99999999, "Price must be less than $1,000,000"),
-    originalPrice: z
+    original_price: z
       .number({ invalid_type_error: "Original price must be a valid number" })
       .min(1, "Original price must be greater than $0.00")
       .max(999999999, "Original price must be less than $1,000,000")
@@ -70,8 +70,8 @@ const productSchema = z
   .refine(
     (data) => {
       if (
-        data.originalPrice !== undefined &&
-        data.originalPrice <= data.price
+        data.original_price !== undefined &&
+        data.original_price <= data.price
       ) {
         return false;
       }
@@ -87,3 +87,7 @@ const productSchema = z
 
 export { productSchema };
 export type { ProductFormData };
+export type Product = ProductFormData & {
+  uu_id: string
+  created_at?: string
+}

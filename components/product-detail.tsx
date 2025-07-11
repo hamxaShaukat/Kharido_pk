@@ -1,14 +1,9 @@
 "use client";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { Input } from "@/components/ui/input";
 import {
-  Star,
   Heart,
   ShoppingCart,
   Truck,
@@ -18,674 +13,614 @@ import {
   Plus,
   Minus,
   ChevronRight,
-  User,
-  ThumbsUp,
-  ThumbsDown,
-  Filter,
-  ChevronDown,
+  Package,
+  Calendar,
+  Tag,
+  Sparkles,
+  ArrowLeft,
+  Eye,
+  Zap,
+  CheckCircle,
+  Clock,
 } from "lucide-react";
 import Image from "next/image";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useParams, useRouter } from "next/navigation";
 import { useCartStore } from "@/store/use-cart";
-
-interface Review {
-  id: number;
-  userName: string;
-  rating: number;
-  date: string;
-  title: string;
-  comment: string;
-  verified: boolean;
-  helpful: number;
-  images?: string[];
-}
-
-interface Product {
-  id: number;
-  name: string;
-  price: number;
-  originalPrice: number;
-  rating: number;
-  reviewCount: number;
-  thumbnail: string;
-  images: string[];
-  description: string;
-  features: string[];
-  specifications: { [key: string]: string };
-  inStock: boolean;
-  category: string;
-  brand: string;
-}
-
-const mockProduct: Product = {
-  id: 1,
-  name: "Eco-Smart Wireless Headphones",
-  price: 199.99,
-  originalPrice: 249.99,
-  rating: 4.6,
-  reviewCount: 324,
-  thumbnail: "/placeholder.svg?height=300&width=300",
-  images: [
-    "/placeholder.svg?height=500&width=500",
-    "/placeholder.svg?height=500&width=500",
-    "/placeholder.svg?height=500&width=500",
-    "/placeholder.svg?height=500&width=500",
-  ],
-  description:
-    "Experience premium sound quality with our eco-friendly wireless headphones. Made from sustainable materials without compromising on performance. Features active noise cancellation, 30-hour battery life, and crystal-clear audio.",
-  features: [
-    "Active Noise Cancellation",
-    "30-hour battery life",
-    "Quick charge: 5 min = 3 hours",
-    "Sustainable bamboo construction",
-    "Premium leather-free padding",
-    "Bluetooth 5.2 connectivity",
-  ],
-  specifications: {
-    "Driver Size": "40mm",
-    "Frequency Response": "20Hz - 20kHz",
-    "Battery Life": "30 hours",
-    "Charging Time": "2 hours",
-    Weight: "250g",
-    Connectivity: "Bluetooth 5.2, USB-C",
-  },
-  inStock: true,
-  category: "Electronics",
-  brand: "EcoAudio",
-};
-
-const mockReviews: Review[] = [
-  {
-    id: 1,
-    userName: "Sarah Johnson",
-    rating: 5,
-    date: "2024-01-15",
-    title: "Amazing sound quality and eco-friendly!",
-    comment:
-      "These headphones exceeded my expectations. The sound quality is incredible, and I love that they're made from sustainable materials. The battery life is exactly as advertised.",
-    verified: true,
-    helpful: 23,
-    images: ["/placeholder.svg?height=100&width=100"],
-  },
-  {
-    id: 2,
-    userName: "Mike Chen",
-    rating: 4,
-    date: "2024-01-10",
-    title: "Great headphones, minor comfort issue",
-    comment:
-      "Sound quality is excellent and the noise cancellation works well. Only issue is they can feel a bit tight after long listening sessions, but overall very satisfied.",
-    verified: true,
-    helpful: 15,
-  },
-  {
-    id: 3,
-    userName: "Emma Davis",
-    rating: 5,
-    date: "2024-01-08",
-    title: "Perfect for work from home",
-    comment:
-      "The noise cancellation is a game-changer for my home office. Crystal clear calls and amazing music quality. Worth every penny!",
-    verified: false,
-    helpful: 8,
-  },
-  {
-    id: 4,
-    userName: "Alex Rodriguez",
-    rating: 4,
-    date: "2024-01-05",
-    title: "Solid choice for eco-conscious buyers",
-    comment:
-      "Good build quality and I appreciate the sustainable materials. Sound is great, though not quite as bass-heavy as I prefer.",
-    verified: true,
-    helpful: 12,
-  },
-];
+import { createClient } from "@/utils/supabase/client";
+import { Product } from "@/types/product";
 
 export function ProductDetail() {
+  const router = useRouter();
+  const [product, setProduct] = useState<Product | null>();
+  const [loading, setLoading] = useState<Boolean>();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [reviews, setReviews] = useState<Review[]>(mockReviews);
-  const [showReviewForm, setShowReviewForm] = useState(false);
-  const [reviewFilter, setReviewFilter] = useState("all");
-  const [newReview, setNewReview] = useState({
-    rating: 0,
-    title: "",
-    comment: "",
-    userName: "",
-  });
+  const [activeTab, setActiveTab] = useState("overview");
+  const [imageLoading, setImageLoading] = useState(true);
+  const params: { [key: string]: string | string[] | undefined } = useParams();
+  const id = params.id as string | undefined;
   const addToCart = useCartStore((state) => state.addToCart);
   const getItemQuantity = useCartStore((state) => state.getItemQuantity);
-  const handleAddReview = () => {
-    if (
-      newReview.rating > 0 &&
-      newReview.title &&
-      newReview.comment &&
-      newReview.userName
-    ) {
-      const review: Review = {
-        id: reviews.length + 1,
-        userName: newReview.userName,
-        rating: newReview.rating,
-        date: new Date().toISOString().split("T")[0],
-        title: newReview.title,
-        comment: newReview.comment,
-        verified: false,
-        helpful: 0,
-      };
-      setReviews([review, ...reviews]);
-      setNewReview({ rating: 0, title: "", comment: "", userName: "" });
-      setShowReviewForm(false);
+  const supabase = createClient();
+  console.log(id, "Product ID from params");
+
+ 
+  const handleAddToCart = () => {
+    if (!product) return;
+
+    for (let i = 0; i < quantity; i++) {
+      addToCart({
+        id: product.uu_id,
+        name: product.title,
+        price: product.price,
+        originalPrice: product.original_price,
+        thumbnail: product.thumbnail,
+      });
     }
   };
 
-  const filteredReviews = reviews.filter((review) => {
-    if (reviewFilter === "all") return true;
-    if (reviewFilter === "5") return review.rating === 5;
-    if (reviewFilter === "4") return review.rating === 4;
-    if (reviewFilter === "3") return review.rating === 3;
-    if (reviewFilter === "2") return review.rating === 2;
-    if (reviewFilter === "1") return review.rating === 1;
-    if (reviewFilter === "verified") return review.verified;
-    return true;
-  });
+  const currentQuantityInCart = product ? getItemQuantity(product.uu_id) : 0;
+  const discountPercentage = product?.original_price
+    ? Math.round(
+        ((product.original_price - product.price) / product.original_price) *
+          100
+      )
+    : 0;
 
-  const ratingDistribution = [5, 4, 3, 2, 1].map((rating) => ({
-    rating,
-    count: reviews.filter((r) => r.rating === rating).length,
-    percentage:
-      (reviews.filter((r) => r.rating === rating).length / reviews.length) *
-      100,
-  }));
+ useEffect(() => {
+  const fetchProduct = async () => {
+    if (!id) return;
+
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("uu_id", id)
+        .single();
+
+      if (error) throw error;
+      setProduct(data);
+    } catch (error) {
+      console.error("Error fetching product:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchProduct();
+}, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/50">
+        <div className="container mx-auto px-4 py-8">
+          <div className="grid lg:grid-cols-2 gap-12">
+            {/* Image Skeleton */}
+            <div className="space-y-4">
+              <div className="aspect-square bg-gradient-to-br from-slate-200 to-slate-300 rounded-2xl animate-pulse" />
+              <div className="flex space-x-2">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="w-20 h-20 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg animate-pulse"
+                  />
+                ))}
+              </div>
+            </div>
+            {/* Content Skeleton */}
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="h-8 bg-gradient-to-r from-slate-200 to-slate-300 rounded animate-pulse w-3/4" />
+                <div className="h-12 bg-gradient-to-r from-slate-200 to-slate-300 rounded animate-pulse" />
+                <div className="h-6 bg-gradient-to-r from-slate-200 to-slate-300 rounded animate-pulse w-1/2" />
+              </div>
+              <div className="space-y-2">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="h-4 bg-gradient-to-r from-slate-200 to-slate-300 rounded animate-pulse"
+                  />
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/50 flex items-center justify-center">
+        <div className="text-center">
+          <Package className="h-16 w-16 text-slate-400 mx-auto mb-4" />
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            Product Not Found
+          </h2>
+          <p className="text-slate-600 mb-6">
+            The product you're looking for doesn't exist.
+          </p>
+          <Button
+            onClick={() => router.push("/products")}
+            className="bg-gradient-to-r from-emerald-600 to-teal-600"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Products
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-white py-8">
-      <div className="container mx-auto px-4">
-        {/* Breadcrumb */}
-        <nav className="flex items-center space-x-2 text-sm text-slate-600 mb-8">
-          <span>Home</span>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/50">
+      {/* Floating Background Elements */}
+      <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-emerald-200/20 to-teal-200/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-teal-200/20 to-emerald-200/20 rounded-full blur-3xl animate-pulse delay-1000" />
+
+      <div className="container mx-auto px-4 py-8 relative z-10">
+        {/* Enhanced Breadcrumb */}
+        <motion.nav
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="flex items-center space-x-2 text-sm text-slate-600 mb-8 bg-white/60 backdrop-blur-sm rounded-full px-6 py-3 w-fit"
+        >
+          <button
+            onClick={() => router.push("/")}
+            className="hover:text-emerald-600 transition-colors"
+          >
+            Home
+          </button>
           <ChevronRight className="h-4 w-4" />
-          <span>{mockProduct.category}</span>
+          <button
+            onClick={() => router.push("/products")}
+            className="hover:text-emerald-600 transition-colors"
+          >
+            Products
+          </button>
           <ChevronRight className="h-4 w-4" />
-          <span className="text-slate-900 font-medium">{mockProduct.name}</span>
-        </nav>
+          <button
+            onClick={() =>
+              router.push(`/products?category=${product.category}`)
+            }
+            className="hover:text-emerald-600 transition-colors"
+          >
+            {product.category}
+          </button>
+          <ChevronRight className="h-4 w-4" />
+          <span className="text-slate-900 font-medium truncate max-w-[200px]">
+            {product.title}
+          </span>
+        </motion.nav>
 
         <div className="grid lg:grid-cols-2 gap-12 mb-16">
-          {/* Product Images */}
-          <div className="space-y-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.5 }}
-              className="relative aspect-square bg-gradient-to-br from-slate-50 to-emerald-50 rounded-2xl overflow-hidden"
-            >
-              <Image
-                src={mockProduct.images[selectedImage] || "/placeholder.svg"}
-                alt={mockProduct.name}
-                fill
-                className="object-cover"
-              />
-              <Button
-                variant="ghost"
-                size="icon"
-                className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm hover:bg-white"
-                onClick={() => setIsWishlisted(!isWishlisted)}
+          {/* Enhanced Product Images */}
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            className="space-y-6"
+          >
+            <div className="relative group">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.5 }}
+                className="relative aspect-square bg-gradient-to-br from-white via-slate-50 to-emerald-50/30 rounded-3xl overflow-hidden shadow-2xl"
               >
-                <Heart
-                  className={`h-5 w-5 ${
-                    isWishlisted
-                      ? "fill-red-500 text-red-500"
-                      : "text-slate-600"
-                  }`}
-                />
-              </Button>
-            </motion.div>
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={selectedImage}
+                    initial={{ opacity: 0, scale: 1.1 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.3 }}
+                    className="relative w-full h-full"
+                  >
+                    <Image
+                      src={
+                        product.images[selectedImage] ||
+                        product.thumbnail ||
+                        "/placeholder.svg"
+                      }
+                      alt={product.title}
+                      fill
+                      className="object-cover"
+                      onLoad={() => setImageLoading(false)}
+                    />
+                    {imageLoading && (
+                      <div className="absolute inset-0 bg-gradient-to-br from-slate-200 to-slate-300 animate-pulse" />
+                    )}
+                  </motion.div>
+                </AnimatePresence>
 
-            {/* Thumbnail Images */}
-            <div className="flex space-x-2 overflow-x-auto">
-              {mockProduct.images.map((image, index) => (
-                <button
+                {/* Floating Action Buttons */}
+                <div className="absolute top-6 right-6 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-xl border-0"
+                      onClick={() => setIsWishlisted(!isWishlisted)}
+                    >
+                      <Heart
+                        className={`h-5 w-5 transition-all duration-300 ${
+                          isWishlisted
+                            ? "fill-red-500 text-red-500 scale-110"
+                            : "text-slate-600"
+                        }`}
+                      />
+                    </Button>
+                  </motion.div>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="bg-white/90 backdrop-blur-sm hover:bg-white shadow-xl border-0"
+                    >
+                      <Share2 className="h-5 w-5 text-slate-600" />
+                    </Button>
+                  </motion.div>
+                </div>
+
+                {/* Discount Badge */}
+                {discountPercentage > 0 && (
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2 }}
+                    className="absolute top-6 left-6"
+                  >
+                    <div className="relative">
+                      <Badge className="bg-gradient-to-r from-red-500 via-pink-500 to-red-600 text-white border-0 shadow-2xl px-4 py-2 text-lg font-bold">
+                        <Zap className="w-4 h-4 mr-1" />
+                        {discountPercentage}% OFF
+                      </Badge>
+                      <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-400 rounded-full blur-lg opacity-50 -z-10" />
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* Stock Status */}
+                <div className="absolute bottom-6 left-6">
+                  <Badge
+                    className={`${
+                      product.stock > 0
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
+                    } border-0 shadow-lg backdrop-blur-sm`}
+                  >
+                    <div
+                      className={`w-2 h-2 rounded-full mr-2 ${
+                        product.stock > 0 ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    />
+                    {product.stock > 0
+                      ? `${product.stock} in stock`
+                      : "Out of stock"}
+                  </Badge>
+                </div>
+              </motion.div>
+            </div>
+
+            {/* Enhanced Thumbnail Images */}
+            <div className="flex space-x-3 overflow-x-auto pb-2">
+              {(product.images.length > 0
+                ? product.images
+                : [product.thumbnail]
+              ).map((image, index) => (
+                <motion.button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`flex-shrink-0 w-20 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className={`flex-shrink-0 w-24 h-24 rounded-xl overflow-hidden border-3 transition-all duration-300 ${
                     selectedImage === index
-                      ? "border-emerald-500"
-                      : "border-slate-200"
+                      ? "border-emerald-500 shadow-lg shadow-emerald-500/25"
+                      : "border-slate-200 hover:border-emerald-300"
                   }`}
                 >
                   <Image
                     src={image || "/placeholder.svg"}
                     alt={`Product ${index + 1}`}
-                    width={80}
-                    height={80}
-                    className="object-cover"
+                    width={96}
+                    height={96}
+                    className="object-cover w-full h-full"
                   />
-                </button>
+                </motion.button>
               ))}
             </div>
-          </div>
+          </motion.div>
 
-          {/* Product Info */}
-          <div className="space-y-6">
-            <div>
-              <Badge className="bg-emerald-100 text-emerald-700 mb-2">
-                {mockProduct.brand}
-              </Badge>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">
-                {mockProduct.name}
-              </h1>
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="flex items-center space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`h-5 w-5 ${
-                        i < Math.floor(mockProduct.rating)
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-slate-300"
-                      }`}
-                    />
-                  ))}
-                  <span className="text-slate-600 ml-2">
-                    {mockProduct.rating}
-                  </span>
-                </div>
-                <span className="text-slate-500">
-                  ({mockProduct.reviewCount} reviews)
-                </span>
+          {/* Enhanced Product Info */}
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="space-y-8"
+          >
+            {/* Header Section */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-3">
+                <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border border-emerald-200/50 px-4 py-2 font-semibold">
+                  {product.category}
+                </Badge>
+                <Badge
+                  variant="outline"
+                  className="bg-white/60 backdrop-blur-sm"
+                >
+                  <Calendar className="w-3 h-3 mr-1" />
+                  {product.created_at
+                    ? new Date(product.created_at).toLocaleDateString()
+                    : "N/A"}
+                </Badge>
               </div>
-            </div>
 
-            {/* Price */}
-            <div className="flex items-center space-x-4">
-              <span className="text-3xl font-bold text-slate-900">
-                ${mockProduct.price}
-              </span>
-              <span className="text-xl text-slate-500 line-through">
-                ${mockProduct.originalPrice}
-              </span>
-              <Badge className="bg-red-100 text-red-700">
-                {Math.round(
-                  ((mockProduct.originalPrice - mockProduct.price) /
-                    mockProduct.originalPrice) *
-                    100
-                )}
-                % OFF
-              </Badge>
+              <h1 className="text-4xl font-bold text-slate-900 leading-tight">
+                {product.title}
+              </h1>
+
+              {/* Enhanced Price Section */}
+              <div className="bg-gradient-to-r from-white/80 to-emerald-50/50 backdrop-blur-sm rounded-2xl p-6 border border-emerald-100">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-4">
+                      <span className="text-4xl font-bold bg-gradient-to-r from-slate-800 to-emerald-700 bg-clip-text text-transparent">
+                        ${product.price.toFixed(2)}
+                      </span>
+                      {product.original_price &&
+                        product.original_price > product.price && (
+                          <span className="text-2xl text-slate-500 line-through">
+                            ${product.original_price.toFixed(2)}
+                          </span>
+                        )}
+                    </div>
+                    {product.original_price &&
+                      product.original_price > product.price && (
+                        <p className="text-green-600 font-semibold flex items-center">
+                          <Sparkles className="w-4 h-4 mr-1" />
+                          You save $
+                          {(product.original_price - product.price).toFixed(2)}
+                        </p>
+                      )}
+                  </div>
+                  {discountPercentage > 0 && (
+                    <div className="text-right">
+                      <div className="text-3xl font-bold text-red-600">
+                        {discountPercentage}%
+                      </div>
+                      <div className="text-sm text-red-600">OFF</div>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Description */}
-            <p className="text-slate-600 leading-relaxed">
-              {mockProduct.description}
-            </p>
-
-            {/* Features */}
-            <div>
-              <h3 className="font-semibold text-slate-900 mb-3">
-                Key Features
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50">
+              <h3 className="font-semibold text-slate-900 mb-3 flex items-center">
+                <Eye className="w-5 h-5 mr-2 text-emerald-600" />
+                Product Description
               </h3>
-              <ul className="space-y-2">
-                {mockProduct.features.map((feature, index) => (
-                  <li
-                    key={index}
-                    className="flex items-center space-x-2 text-slate-600"
-                  >
-                    <div className="w-2 h-2 bg-emerald-500 rounded-full" />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-slate-700 leading-relaxed text-lg">
+                {product.description}
+              </p>
             </div>
 
             {/* Quantity and Add to Cart */}
-            <div className="space-y-4">
-             
-
-              <div className="flex space-x-4">
-                <Button
-                  onClick={() =>
-                    addToCart({
-                      id: mockProduct.id,
-                      name: mockProduct.name,
-                      price: mockProduct.price,
-                      originalPrice: mockProduct.originalPrice,
-                      thumbnail: mockProduct.thumbnail,
-                  
-                    })
-                  }
-                  size="lg"
-                  className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-3 rounded-xl font-semibold"
-                >
-                  <ShoppingCart className="h-5 w-5 mr-2" />
-                  Add to Cart
-
-                </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  className="px-6 py-3 rounded-xl bg-transparent"
-                >
-                  <Share2 className="h-5 w-5" />
-                </Button>
+            <div className="space-y-6">
+              <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 border border-slate-200/50">
+                <div className="flex items-center justify-between mb-4">
+                  <span className="font-semibold text-slate-900">Quantity</span>
+                  {currentQuantityInCart > 0 && (
+                    <Badge className="bg-emerald-100 text-emerald-700">
+                      {currentQuantityInCart} in cart
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center bg-white rounded-xl border border-slate-200 shadow-sm">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={quantity <= 1}
+                      className="h-12 w-12 rounded-l-xl"
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="px-6 py-3 font-semibold text-lg min-w-[60px] text-center">
+                      {quantity}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() =>
+                        setQuantity(Math.min(product.stock, quantity + 1))
+                      }
+                      disabled={quantity >= product.stock}
+                      className="h-12 w-12 rounded-r-xl"
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="text-sm text-slate-600">
+                    Max: {product.stock} available
+                  </div>
+                </div>
               </div>
+
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Button
+                  onClick={handleAddToCart}
+                  disabled={product.stock === 0}
+                  size="lg"
+                  className="w-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white py-4 rounded-2xl font-semibold text-lg shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 disabled:opacity-50"
+                >
+                  <ShoppingCart className="h-6 w-6 mr-3" />
+                  {product.stock === 0
+                    ? "Out of Stock"
+                    : `Add ${quantity} to Cart`}
+                </Button>
+              </motion.div>
             </div>
 
             {/* Trust Badges */}
             <div className="grid grid-cols-3 gap-4 pt-6 border-t border-slate-200">
-              <div className="flex items-center space-x-2 text-sm text-slate-600">
-                <Truck className="h-4 w-4 text-emerald-600" />
-                <span>Free Shipping</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-slate-600">
-                <RotateCcw className="h-4 w-4 text-emerald-600" />
-                <span>30-Day Returns</span>
-              </div>
-              <div className="flex items-center space-x-2 text-sm text-slate-600">
-                <Shield className="h-4 w-4 text-emerald-600" />
-                <span>2-Year Warranty</span>
-              </div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="flex flex-col items-center space-y-2 text-center p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-slate-200/50"
+              >
+                <div className="w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center">
+                  <Truck className="h-6 w-6 text-emerald-600" />
+                </div>
+                <span className="text-sm font-medium text-slate-700">
+                  Free Shipping
+                </span>
+                <span className="text-xs text-slate-500">
+                  On orders over $50
+                </span>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="flex flex-col items-center space-y-2 text-center p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-slate-200/50"
+              >
+                <div className="w-12 h-12 bg-teal-100 rounded-full flex items-center justify-center">
+                  <RotateCcw className="h-6 w-6 text-teal-600" />
+                </div>
+                <span className="text-sm font-medium text-slate-700">
+                  30-Day Returns
+                </span>
+                <span className="text-xs text-slate-500">
+                  Hassle-free returns
+                </span>
+              </motion.div>
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="flex flex-col items-center space-y-2 text-center p-4 bg-white/60 backdrop-blur-sm rounded-xl border border-slate-200/50"
+              >
+                <div className="w-12 h-12 bg-cyan-100 rounded-full flex items-center justify-center">
+                  <Shield className="h-6 w-6 text-cyan-600" />
+                </div>
+                <span className="text-sm font-medium text-slate-700">
+                  Secure Payment
+                </span>
+                <span className="text-xs text-slate-500">
+                  256-bit SSL encryption
+                </span>
+              </motion.div>
             </div>
-          </div>
+          </motion.div>
         </div>
 
-        {/* Product Details Tabs */}
-        <div className="mb-16">
-          <div className="border-b border-slate-200 mb-8">
-            <nav className="flex space-x-8">
-              <button className="py-4 px-2 border-b-2 border-emerald-500 text-emerald-600 font-medium">
-                Specifications
-              </button>
-            </nav>
+        {/* Enhanced Product Details Section */}
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 border border-slate-200/50 shadow-xl"
+        >
+          <div className="flex items-center justify-center mb-8">
+            <h2 className="text-3xl font-bold text-slate-900 flex items-center">
+              <Tag className="w-8 h-8 mr-3 text-emerald-600" />
+              Product Information
+            </h2>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {Object.entries(mockProduct.specifications).map(([key, value]) => (
-              <div
-                key={key}
-                className="flex justify-between py-3 border-b border-slate-100"
-              >
-                <span className="font-medium text-slate-900">{key}</span>
-                <span className="text-slate-600">{value}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Reviews Section */}
-        <div className="space-y-8">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-slate-900">
-              Customer Reviews
-            </h2>
-            <Button
-              onClick={() => setShowReviewForm(!showReviewForm)}
-              className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
-            >
-              Write a Review
-            </Button>
-          </div>
-
-          {/* Review Summary */}
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="text-4xl font-bold text-slate-900 mb-2">
-                {mockProduct.rating}
-              </div>
-              <div className="flex items-center justify-center space-x-1 mb-2">
-                {[...Array(5)].map((_, i) => (
-                  <Star
-                    key={i}
-                    className={`h-5 w-5 ${
-                      i < Math.floor(mockProduct.rating)
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-slate-300"
-                    }`}
-                  />
-                ))}
-              </div>
-              <p className="text-slate-600">
-                Based on {mockProduct.reviewCount} reviews
-              </p>
-            </div>
-
-            <div className="md:col-span-2 space-y-2">
-              {ratingDistribution.map(({ rating, count, percentage }) => (
-                <div key={rating} className="flex items-center space-x-4">
-                  <span className="text-sm text-slate-600 w-8">{rating}★</span>
-                  <div className="flex-1 bg-slate-200 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-sm text-slate-600 w-8">{count}</span>
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-slate-900 mb-4 flex items-center">
+                <CheckCircle className="w-5 h-5 mr-2 text-emerald-600" />
+                Details
+              </h3>
+              <div className="space-y-3">
+                <div className="flex justify-between py-3 border-b border-slate-100">
+                  <span className="font-medium text-slate-900">Product ID</span>
+                  <span className="text-slate-600 font-mono text-sm">
+                    {product.uu_id.slice(0, 8)}...
+                  </span>
                 </div>
-              ))}
+                <div className="flex justify-between py-3 border-b border-slate-100">
+                  <span className="font-medium text-slate-900">Category</span>
+                  <Badge className="bg-emerald-50 text-emerald-700">
+                    {product.category}
+                  </Badge>
+                </div>
+                <div className="flex justify-between py-3 border-b border-slate-100">
+                  <span className="font-medium text-slate-900">
+                    Stock Status
+                  </span>
+                  <div className="flex items-center space-x-2">
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        product.stock > 0 ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    />
+                    <span className="text-slate-600">
+                      {product.stock > 0
+                        ? `${product.stock} available`
+                        : "Out of stock"}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex justify-between py-3 border-b border-slate-100">
+                  <span className="font-medium text-slate-900">Added Date</span>
+                  <span className="text-slate-600">
+                    {product.created_at
+                      ? new Date(product.created_at).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h3 className="text-xl font-semibold text-slate-900 mb-4 flex items-center">
+                <Clock className="w-5 h-5 mr-2 text-teal-600" />
+                Pricing History
+              </h3>
+              <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 border border-emerald-200/50">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-700">Current Price</span>
+                    <span className="text-2xl font-bold text-emerald-600">
+                      ${product.price.toFixed(2)}
+                    </span>
+                  </div>
+                  {product.original_price && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-700">Original Price</span>
+                        <span className="text-lg text-slate-500 line-through">
+                          ${product.original_price.toFixed(2)}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-slate-700">You Save</span>
+                        <span className="text-lg font-semibold text-green-600">
+                          ${(product.original_price - product.price).toFixed(2)}{" "}
+                          ({discountPercentage}%)
+                        </span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Review Form */}
-          <AnimatePresence>
-            {showReviewForm && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="p-6 bg-gradient-to-br from-slate-50 to-emerald-50 border-emerald-200">
-                  <CardContent className="space-y-4 p-0">
-                    <h3 className="text-lg font-semibold text-slate-900">
-                      Write Your Review
-                    </h3>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <Input
-                        placeholder="Your name"
-                        value={newReview.userName}
-                        onChange={(e) =>
-                          setNewReview({
-                            ...newReview,
-                            userName: e.target.value,
-                          })
-                        }
-                        className="bg-white"
-                      />
-                      <Input
-                        placeholder="Review title"
-                        value={newReview.title}
-                        onChange={(e) =>
-                          setNewReview({ ...newReview, title: e.target.value })
-                        }
-                        className="bg-white"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        Rating
-                      </label>
-                      <div className="flex space-x-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            onClick={() =>
-                              setNewReview({ ...newReview, rating: star })
-                            }
-                            className="p-1"
-                          >
-                            <Star
-                              className={`h-6 w-6 ${
-                                star <= newReview.rating
-                                  ? "fill-yellow-400 text-yellow-400"
-                                  : "text-slate-300"
-                              }`}
-                            />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <Textarea
-                      placeholder="Share your experience with this product..."
-                      value={newReview.comment}
-                      onChange={(e) =>
-                        setNewReview({ ...newReview, comment: e.target.value })
-                      }
-                      className="min-h-[100px] bg-white"
-                    />
-
-                    <div className="flex space-x-4">
-                      <Button
-                        onClick={handleAddReview}
-                        className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white"
-                      >
-                        Submit Review
-                      </Button>
-                      <Button
-                        variant="outline"
-                        onClick={() => setShowReviewForm(false)}
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Review Filters */}
-          <div className="flex items-center space-x-4">
-            <span className="text-sm font-medium text-slate-700">
-              Filter by:
-            </span>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="capitalize bg-transparent">
-                  <Filter className="h-4 w-4 mr-2" />
-                  {reviewFilter === "all" ? "All Reviews" : reviewFilter}
-                  <ChevronDown className="h-4 w-4 ml-2" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem onClick={() => setReviewFilter("all")}>
-                  All Reviews
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("5")}>
-                  5 Stars
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("4")}>
-                  4 Stars
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("3")}>
-                  3 Stars
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("2")}>
-                  2 Stars
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("1")}>
-                  1 Star
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setReviewFilter("verified")}>
-                  Verified Only
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Reviews List */}
-          <div className="space-y-6">
-            {filteredReviews.map((review) => (
-              <motion.div
-                key={review.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card className="p-6 hover:shadow-lg transition-shadow">
-                  <CardContent className="p-0">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
-                          <User className="h-5 w-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="flex items-center space-x-2">
-                            <span className="font-medium text-slate-900">
-                              {review.userName}
-                            </span>
-                            {review.verified && (
-                              <Badge className="bg-emerald-100 text-emerald-700 text-xs">
-                                Verified Purchase
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-2 mt-1">
-                            <div className="flex space-x-1">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={`h-4 w-4 ${
-                                    i < review.rating
-                                      ? "fill-yellow-400 text-yellow-400"
-                                      : "text-slate-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span className="text-sm text-slate-500">
-                              {review.date}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <h4 className="font-semibold text-slate-900 mb-2">
-                      {review.title}
-                    </h4>
-                    <p className="text-slate-600 mb-4 leading-relaxed">
-                      {review.comment}
-                    </p>
-
-                    {review.images && (
-                      <div className="flex space-x-2 mb-4">
-                        {review.images.map((image, index) => (
-                          <Image
-                            key={index}
-                            src={image || "/placeholder.svg"}
-                            alt={`Review image ${index + 1}`}
-                            width={80}
-                            height={80}
-                            className="rounded-lg object-cover"
-                          />
-                        ))}
-                      </div>
-                    )}
-
-                    <div className="flex items-center space-x-4 text-sm">
-                      <button className="flex items-center space-x-1 text-slate-500 hover:text-emerald-600 transition-colors">
-                        <ThumbsUp className="h-4 w-4" />
-                        <span>Helpful ({review.helpful})</span>
-                      </button>
-                      <button className="flex items-center space-x-1 text-slate-500 hover:text-slate-700 transition-colors">
-                        <ThumbsDown className="h-4 w-4" />
-                        <span>Not helpful</span>
-                      </button>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );

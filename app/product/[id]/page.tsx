@@ -1,7 +1,6 @@
-import { ProductDetail } from "@/components/product-detail"
-import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
-import { BackgroundBlobs } from "@/components/background-blobs"
+import { Navigation } from "@/components/navigation"
+import { ProductDetail } from "@/components/product-detail"
 
 export default function ProductDetailPage() {
   return (

@@ -1,191 +1,431 @@
-"use client";
-
-import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Star, Heart, ShoppingCart } from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { useCartStore } from "@/store/use-cart";
-
-const products = [
-  {
-    id: 1,
-    name: "Eco-Smart Headphones",
-    price: 199.99,
-    originalPrice: 249.99,
-    rating: 4.8,
-    reviews: 124,
-    thumbnail: "/placeholder.svg?height=300&width=300",
-    image: "/placeholder.svg?height=300&width=300",
-    badge: "Best Seller",
-    category: "Electronics",
-  }
-];
+"use client"
+import { motion, AnimatePresence } from "framer-motion"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Star, Heart, ShoppingCart, Sparkles, TrendingUp, Package, Eye, ArrowRight, Zap } from "lucide-react"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useCartStore } from "@/store/use-cart"
+import { createClient } from "@/utils/supabase/client"
+import { useEffect, useState } from "react"
+import type { Product } from "@/types/product"
 
 export function ProductsSection() {
-  const router = useRouter();
-  const addToCart = useCartStore((state) => state.addToCart);
-  const getItemQuantity = useCartStore((state) => state.getItemQuantity);
-  const goToProduct = (id: number) => {
-    router.push(`/product/${id}`);
-  };
+  const router = useRouter()
+  const addToCart = useCartStore((state) => state.addToCart)
+  const getItemQuantity = useCartStore((state) => state.getItemQuantity)
+  const supabase = createClient()
+  const [products, setProducts] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [wishlistedItems, setWishlistedItems] = useState<string[]>([])
+  const [hoveredProduct, setHoveredProduct] = useState<string | null>(null)
+
+  const fetchProducts = async () => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(6)
+
+      if (error) {
+        console.error("Error fetching products:", error)
+        return
+      }
+
+      if (data) {
+        setProducts(data)
+      }
+    } catch (error) {
+      console.error("Error fetching products:", error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchProducts()
+  }, [])
+
+  const goToProduct = (id: string) => {
+    router.push(`/product/${id}`)
+  }
+
+  const toggleWishlist = (productId: string) => {
+    setWishlistedItems((prev) =>
+      prev.includes(productId) ? prev.filter((id) => id !== productId) : [...prev, productId],
+    )
+  }
+
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      id: product.uu_id,
+      name: product.title,
+      price: product.price,
+      originalPrice: product.original_price,
+      thumbnail: product.thumbnail,
+    })
+  }
+
   return (
-    <section className="py-20 px-4">
-      <div className="container mx-auto">
+    <section className="relative py-24 px-4 overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/30 via-white to-teal-50/30" />
+      <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-emerald-200/20 to-teal-200/20 rounded-full blur-3xl animate-pulse" />
+      <div className="absolute bottom-20 right-10 w-96 h-96 bg-gradient-to-r from-teal-200/20 to-emerald-200/20 rounded-full blur-3xl animate-pulse delay-1000" />
+
+      <div className="container mx-auto relative z-10">
+        {/* Enhanced Header */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.8 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 bg-gradient-to-r from-slate-800 to-emerald-700 bg-clip-text text-transparent">
-            Featured Products
+          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-emerald-100 to-teal-100 rounded-full px-6 py-3 mb-6">
+            <Sparkles className="w-5 h-5 text-emerald-600" />
+            <span className="font-semibold text-emerald-700">Featured Collection</span>
+          </div>
+
+          <h2 className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-slate-800 via-emerald-700 to-teal-600 bg-clip-text text-transparent leading-tight">
+            Discover Amazing
+            <span className="block bg-gradient-to-r from-emerald-600 to-teal-500 bg-clip-text text-transparent">
+              Products
+            </span>
           </h2>
-          <p className="text-slate-600 text-lg max-w-2xl mx-auto">
-            Discover our handpicked selection of premium, eco-conscious products
-            that combine quality with sustainability.
+
+          <p className="text-slate-600 text-xl max-w-3xl mx-auto leading-relaxed">
+            Handpicked selection of premium, eco-conscious products that combine
+            <span className="font-semibold text-emerald-600"> exceptional quality</span> with
+            <span className="font-semibold text-teal-600"> sustainable design</span>
           </p>
-        </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product, index) => {
-            const quantity = getItemQuantity(product.id);
-            return (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-                className="group"
-              >
-                <Card className="overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 bg-white/80 backdrop-blur-sm">
-                  <CardContent className="p-0">
-                    <div className="relative overflow-hidden">
-                      <Image
-                        src={product.image || "/placeholder.svg"}
-                        alt={product.name}
-                        width={300}
-                        height={300}
-                        className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-4 left-4">
-                        <Badge
-                          className={`${
-                            product.badge === "Best Seller"
-                              ? "bg-emerald-500"
-                              : product.badge === "New"
-                              ? "bg-blue-500"
-                              : product.badge === "Sale"
-                              ? "bg-red-500"
-                              : "bg-slate-500"
-                          } text-white border-0`}
-                        >
-                          {product.badge}
-                        </Badge>
-                      </div>
-                      <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <Button
-                          size="icon"
-                          variant="secondary"
-                          className="bg-white/90 hover:bg-white shadow-lg"
-                        >
-                          <Heart className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-
-                    <div className="p-6">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-sm text-slate-500 font-medium">
-                          {product.category}
-                        </span>
-                        <div className="flex items-center space-x-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm font-medium">
-                            {product.rating}
-                          </span>
-                          <span className="text-sm text-slate-500">
-                            ({product.reviews})
-                          </span>
-                        </div>
-                      </div>
-
-                      <h3 className="font-semibold text-lg mb-3 text-slate-800 group-hover:text-emerald-700 transition-colors cursor-pointer">
-                        <a
-                          href={`/product/${product.id}`}
-                          className="hover:underline"
-                        >
-                          {product.name}
-                        </a>
-                      </h3>
-
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-2xl font-bold text-slate-800">
-                            ${product.price}
-                          </span>
-                          <span className="text-sm text-slate-500 line-through">
-                            ${product.originalPrice}
-                          </span>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 text-xs px-2 bg-transparent cursor-pointer"
-                            onClick={() => goToProduct(product.id)}
-                          >
-                            View
-                          </Button>
-                          <Button
-                            onClick={() =>
-                              addToCart({
-                                id: product.id,
-                                name: product.name,
-                                price: product.price,
-                                originalPrice: product.originalPrice,
-                                thumbnail: product.thumbnail,
-                              })
-                            }
-                            size="sm"
-                            className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer"
-                          >
-                            <ShoppingCart className="h-4 w-4 mr-1" />
-                            Add
-                            
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            );
-          })}
-        </div>
-
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
-        >
-          <Button
-            size="lg"
-            variant="outline"
-            className="border-2 border-emerald-500 text-emerald-600 hover:bg-emerald-500 hover:text-white px-8 py-3 rounded-full transition-all duration-300 bg-transparent cursor-pointer"
-            onClick={() => router.push("/products")}
+          {/* Stats Bar */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            viewport={{ once: true }}
+            className="flex items-center justify-center gap-8 mt-8"
           >
-            View All Products
-          </Button>
+            <div className="text-center">
+              <div className="text-2xl font-bold text-emerald-600">{products.length}+</div>
+              <div className="text-sm text-slate-600">Products</div>
+            </div>
+            <div className="w-px h-8 bg-slate-300" />
+            <div className="text-center">
+              <div className="text-2xl font-bold text-teal-600">4.9★</div>
+              <div className="text-sm text-slate-600">Rating</div>
+            </div>
+            <div className="w-px h-8 bg-slate-300" />
+            <div className="text-center">
+              <div className="text-2xl font-bold text-emerald-600">1000+</div>
+              <div className="text-sm text-slate-600">Happy Customers</div>
+            </div>
+          </motion.div>
         </motion.div>
+
+        {/* Loading State */}
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="flex flex-col items-center justify-center py-20"
+            >
+              <div className="relative">
+                <div className="w-20 h-20 border-4 border-emerald-200 rounded-full animate-spin">
+                  <div className="absolute top-0 left-0 w-20 h-20 border-4 border-transparent border-t-emerald-600 rounded-full animate-spin"></div>
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Package className="w-8 h-8 text-emerald-600 animate-pulse" />
+                </div>
+              </div>
+              <motion.p
+                className="text-slate-600 mt-6 text-lg font-medium"
+                animate={{ opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+              >
+                Loading amazing products...
+              </motion.p>
+
+              {/* Loading Skeleton Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12 w-full">
+                {[...Array(6)].map((_, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.5, delay: index * 0.1 }}
+                    className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-lg"
+                  >
+                    <div className="animate-pulse">
+                      <div className="bg-gradient-to-r from-slate-200 to-slate-300 h-64 rounded-xl mb-4"></div>
+                      <div className="bg-gradient-to-r from-slate-200 to-slate-300 h-4 rounded mb-2"></div>
+                      <div className="bg-gradient-to-r from-slate-200 to-slate-300 h-6 rounded mb-4 w-3/4"></div>
+                      <div className="flex justify-between items-center">
+                        <div className="bg-gradient-to-r from-slate-200 to-slate-300 h-8 rounded w-20"></div>
+                        <div className="bg-gradient-to-r from-slate-200 to-slate-300 h-8 rounded w-24"></div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Products Grid */}
+        <AnimatePresence>
+          {!loading && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+            >
+              {products.map((product, index) => {
+                const quantity = getItemQuantity(product.uu_id)
+                const isWishlisted = wishlistedItems.includes(product.uu_id)
+                const isHovered = hoveredProduct === product.uu_id
+
+                return (
+                  <motion.div
+                    key={product.uu_id}
+                    initial={{ opacity: 0, y: 50 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.6, delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    onHoverStart={() => setHoveredProduct(product.uu_id)}
+                    onHoverEnd={() => setHoveredProduct(null)}
+                    className="group"
+                  >
+                    <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white via-white to-slate-50/50 shadow-xl hover:shadow-2xl transition-all duration-700 cursor-pointer transform hover:-translate-y-3">
+                      {/* Animated Background Gradient */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                      {/* Glowing Border Effect */}
+                      <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 opacity-0 group-hover:opacity-20 blur-sm transition-all duration-700" />
+
+                      {/* Floating Elements */}
+                      <motion.div
+                        className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full opacity-0 group-hover:opacity-100"
+                        animate={isHovered ? { scale: [1, 1.2, 1], rotate: 360 } : {}}
+                        transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY }}
+                      />
+
+                      <CardContent className="relative p-0 z-10">
+                        <div className="relative overflow-hidden rounded-t-2xl">
+                          <div className="relative w-full h-80 bg-gradient-to-br from-slate-100 via-white to-slate-50">
+                            <Image
+                              src={product.thumbnail || "/placeholder.svg"}
+                              alt={product.title || "Product Image"}
+                              fill
+                              className="object-cover group-hover:scale-110 transition-transform duration-700"
+                            />
+
+                            {/* Floating Discount Badge */}
+                            {product.original_price && product.original_price > product.price && (
+                              <motion.div
+                                className="absolute top-4 left-4 z-20"
+                                initial={{ scale: 0, rotate: -180 }}
+                                animate={{ scale: 1, rotate: 0 }}
+                                transition={{ duration: 0.5, delay: index * 0.1 }}
+                              >
+                                <div className="relative">
+                                  <Badge className="bg-gradient-to-r from-red-500 via-pink-500 to-red-600 text-white border-0 shadow-2xl px-4 py-2 text-sm font-bold">
+                                    <TrendingUp className="w-3 h-3 mr-1" />
+                                    {Math.round(
+                                      ((product.original_price - product.price) / product.original_price) * 100,
+                                    )}
+                                    % OFF
+                                  </Badge>
+                                  <div className="absolute inset-0 bg-gradient-to-r from-red-400 to-pink-400 rounded-full blur-lg opacity-50 -z-10" />
+                                </div>
+                              </motion.div>
+                            )}
+
+                            {/* Floating Action Buttons */}
+                            <div className="absolute top-4 right-4 flex flex-col gap-3 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-x-4 group-hover:translate-x-0">
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  size="icon"
+                                  className="bg-white/95 hover:bg-white shadow-2xl backdrop-blur-sm border-0 text-slate-600 hover:text-red-500 transition-colors duration-300"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    toggleWishlist(product.uu_id)
+                                  }}
+                                >
+                                  <Heart
+                                    className={`h-4 w-4 transition-all duration-300 ${
+                                      isWishlisted ? "fill-red-500 text-red-500 scale-110" : "text-slate-600"
+                                    }`}
+                                  />
+                                </Button>
+                              </motion.div>
+                              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  size="icon"
+                                  className="bg-white/95 hover:bg-white shadow-2xl backdrop-blur-sm border-0 text-slate-600 hover:text-emerald-600 transition-colors duration-300"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    goToProduct(product.uu_id)
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </motion.div>
+                            </div>
+
+                            {/* Stock Status */}
+                            {product.stock === 0 && (
+                              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-black/70 flex items-center justify-center backdrop-blur-sm">
+                                <div className="text-center">
+                                  <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto">
+                                    <Package className="h-8 w-8 text-white" />
+                                  </div>
+                                  <span className="text-white font-bold text-lg">Out of Stock</span>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Shimmer Effect */}
+                            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12" />
+                          </div>
+                        </div>
+
+                        {/* Enhanced Card Content */}
+                        <div className="p-8 space-y-5">
+                          {/* Category and Rating */}
+                          <div className="flex items-center justify-between">
+                            <Badge className="bg-gradient-to-r from-emerald-50 to-teal-50 text-emerald-700 border border-emerald-200/50 px-3 py-1.5 font-medium">
+                              {product.category}
+                            </Badge>
+                            <div className="flex items-center space-x-1">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-4 h-4 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-slate-300"}`}
+                                />
+                              ))}
+                              <span className="text-sm text-slate-600 ml-1">(4.8)</span>
+                            </div>
+                          </div>
+
+                          {/* Product Title */}
+                          <h3 className="font-bold text-xl text-slate-800 group-hover:text-emerald-700 transition-colors duration-300 line-clamp-2 leading-tight">
+                            {product.title}
+                          </h3>
+
+                          {/* Stock Indicator */}
+                          <div className="flex items-center space-x-2">
+                            <div
+                              className={`w-2 h-2 rounded-full ${product.stock > 0 ? "bg-green-500" : "bg-red-500"}`}
+                            />
+                            <span className="text-sm text-slate-600">
+                              {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                            </span>
+                          </div>
+
+                          {/* Price Section */}
+                          <div className="flex items-end justify-between pt-2">
+                            <div className="space-y-1">
+                              <div className="flex items-center space-x-3">
+                                <span className="text-3xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
+                                  ${product.price}
+                                </span>
+                                {product.original_price && product.original_price > product.price && (
+                                  <span className="text-lg text-slate-500 line-through">${product.original_price}</span>
+                                )}
+                              </div>
+                              {product.original_price && product.original_price > product.price && (
+                                <p className="text-sm text-green-600 font-medium flex items-center">
+                                  <Zap className="w-3 h-3 mr-1" />
+                                  Save ${(product.original_price - product.price).toFixed(2)}
+                                </p>
+                              )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex space-x-2">
+                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="border-emerald-500 text-emerald-600 hover:bg-emerald-50 bg-transparent"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    goToProduct(product.uu_id)
+                                  }}
+                                >
+                                  <Eye className="h-4 w-4 mr-1" />
+                                  View
+                                </Button>
+                              </motion.div>
+                              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Button
+                                  size="sm"
+                                  disabled={product.stock === 0}
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    handleAddToCart(product)
+                                  }}
+                                  className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                                >
+                                  <ShoppingCart className="h-4 w-4 mr-1" />
+                                  Add
+                                  {quantity > 0 && (
+                                    <Badge className="ml-2 bg-white/20 text-white border-0 text-xs">{quantity}</Badge>
+                                  )}
+                                </Button>
+                              </motion.div>
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                )
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Enhanced CTA Button */}
+        <AnimatePresence>
+          {!loading && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.4 }}
+              viewport={{ once: true }}
+              className="text-center mt-16"
+            >
+              <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                <Button
+                  size="lg"
+                  className="group bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white px-12 py-4 rounded-full shadow-2xl hover:shadow-emerald-500/25 transition-all duration-500 text-lg font-semibold"
+                  onClick={() => router.push("/products")}
+                >
+                  <span className="flex items-center">
+                    Explore All Products
+                    <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                  </span>
+                </Button>
+              </motion.div>
+
+              <p className="text-slate-600 mt-4 text-sm">
+                Discover over <span className="font-semibold text-emerald-600">1000+ premium products</span> in our
+                collection
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </section>
-  );
+  )
 }

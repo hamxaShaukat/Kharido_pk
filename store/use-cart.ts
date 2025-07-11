@@ -4,7 +4,7 @@ import { create } from "zustand"
 import { persist, createJSONStorage } from "zustand/middleware"
 
 export interface CartItem {
-  id: number
+  id: string
   name: string
   price: number
   originalPrice?: number
@@ -18,15 +18,15 @@ interface CartStore {
 
   // Actions
   addToCart: (product: Omit<CartItem, "quantity">) => void
-  removeFromCart: (productId: number) => void
-  updateQuantity: (productId: number, quantity: number) => void
+  removeFromCart: (productId: string) => void
+  updateQuantity: (productId: string, quantity: number) => void
   clearCart: () => void
 
   // Computed values
   getTotalItems: () => number
   getTotalPrice: () => number
-  getItemQuantity: (productId: number) => number
-  getCartItem: (productId: number) => CartItem | undefined
+  getItemQuantity: (productId: string) => number
+  getCartItem: (productId: string) => CartItem | undefined
 
   // Utility
   setLoading: (loading: boolean) => void

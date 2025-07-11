@@ -1,8 +1,7 @@
-import { ProductListing } from "@/components/product-listing"
-import { Navigation } from "@/components/navigation"
 import { Footer } from "@/components/footer"
-import { BackgroundBlobs } from "@/components/background-blobs"
+import { Navigation } from "@/components/navigation"
 import { NewsletterPopup } from "@/components/newsletter-popup"
+import { ProductListing } from "@/components/product-listing"
 
 export default function ProductsPage() {
   return (
