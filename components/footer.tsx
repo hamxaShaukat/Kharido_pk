@@ -20,8 +20,8 @@ export function Footer() {
   const quickLinks = [
     { name: "Contact Us", href: "/contact-us" },
     { name: "About Us", href: "/about-us" },
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms of Service", href: "/terms" },
+    { name: "Privacy Policy", href: "/privacy-policy" },
+    { name: "Terms of Service", href: "/terms-and-condition" },
   ];
 
   const features = [

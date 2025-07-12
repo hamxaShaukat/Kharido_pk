@@ -268,7 +268,7 @@ export function ProductsSection() {
                               <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
                                 <Button
                                   size="icon"
-                                  className="bg-white/95 hover:bg-white shadow-2xl backdrop-blur-sm border-0 text-slate-600 hover:text-red-500 transition-colors duration-300 w-8 h-8 sm:w-10 sm:h-10"
+                                  className="bg-white/95 hover:bg-white shadow-2xl backdrop-blur-sm border-0 text-slate-600 hover:text-red-500 transition-colors duration-300 w-8 h-8 sm:w-10 sm:h-10 cursor-pointer"
                                   onClick={(e) => {
                                     e.stopPropagation()
                                     toggleWishlist(product.uu_id)

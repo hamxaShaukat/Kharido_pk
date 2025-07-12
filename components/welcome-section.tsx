@@ -3,8 +3,10 @@
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Sparkles } from "lucide-react"
+import { useRouter } from "next/navigation"
 
 export function WelcomeSection() {
+  const router = useRouter()
   return (
     <section className="py-20 px-4">
       <div className="container mx-auto text-center">
@@ -57,6 +59,7 @@ export function WelcomeSection() {
             <Button
               size="lg"
               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 group"
+              onClick={() => router.push("/products")}
             >
               Shop Now
               <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
