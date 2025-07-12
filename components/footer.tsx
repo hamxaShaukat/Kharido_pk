@@ -1,23 +1,20 @@
 "use client";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import categories from "@/constants/categories";
+import { motion } from "framer-motion";
 import {
-  Facebook,
-  Twitter,
-  Instagram,
-  Mail,
-  Phone,
-  MapPin,
   Heart,
   Leaf,
-  Truck,
-  Shield,
+  Mail,
+  MapPin,
+  Phone,
   RotateCcw,
+  Shield,
+  Truck
 } from "lucide-react";
 import Link from "next/link";
-import categories from "@/constants/categories";
 
 export function Footer() {
   const quickLinks = [

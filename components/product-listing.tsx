@@ -726,6 +726,7 @@ export function ProductListing() {
                                           price: product.price,
                                           originalPrice: product.original_price,
                                           thumbnail: product.thumbnail,
+                                          stock: product.stock,
                                         });
                                       }}
                                       className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 px-6 py-2 font-medium"
@@ -890,6 +891,7 @@ export function ProductListing() {
                                               originalPrice:
                                                 product.original_price,
                                               thumbnail: product.thumbnail,
+                                              stock: product.stock,
                                             })
                                           }
                                           className="bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 px-8 py-3 font-medium text-lg"

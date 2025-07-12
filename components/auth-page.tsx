@@ -2,31 +2,29 @@
 
 import type React from "react";
 
-import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { signInWithGoogle } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { FcGoogle } from "react-icons/fc";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { createClient } from "@/utils/supabase/client";
+import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertCircle,
+  ArrowRight,
   Eye,
   EyeOff,
-  Mail,
-  Lock,
-  User,
-  Phone,
-  ArrowRight,
-  AlertCircle,
-  Leaf,
-  Shield,
   Heart,
+  Leaf,
+  Lock,
+  Mail,
+  Phone,
+  Shield,
   Star,
+  User,
 } from "lucide-react";
-import Image from "next/image";
-import { signInWithGoogle } from "@/actions/auth";
-import { createClient } from "@/utils/supabase/client";
+import { useState } from "react";
+import { FcGoogle } from "react-icons/fc";
 import Swal from "sweetalert2";
 
 interface FormData {
