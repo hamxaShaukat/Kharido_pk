@@ -31,6 +31,8 @@ export function TermsConditions() {
       id: "acceptance",
       title: "Acceptance of Terms",
       icon: Scale,
+      color:'from-emerald-500 to-emerald-600',
+      check_color:'text-emerald-600',
       content: [
         {
           subtitle: "Agreement to Terms",
@@ -56,6 +58,8 @@ export function TermsConditions() {
       id: "products-orders",
       title: "Products and Orders",
       icon: ShoppingCart,
+      color:'from-red-500 to-red-600',
+      check_color:'text-red-600',
       content: [
         {
           subtitle: "Product Information",
@@ -80,6 +84,8 @@ export function TermsConditions() {
     {
       id: "payment-pricing",
       title: "Payment and Pricing",
+      color:'from-yellow-500 to-yellow-600',
+      check_color:'text-yellow-600',
       icon: CreditCard,
       content: [
         {
@@ -105,6 +111,8 @@ export function TermsConditions() {
     {
       id: "shipping-delivery",
       title: "Shipping and Delivery",
+      color:'from-fuchsia-500 to-fuchsia-600',
+      check_color:'text-fuchsia-600',
       icon: Truck,
       content: [
         {
@@ -130,6 +138,8 @@ export function TermsConditions() {
     {
       id: "returns-refunds",
       title: "Returns and Refunds",
+      color:'from-cyan-500 to-cyan-600',
+      check_color:'text-cyan-600',
       icon: RotateCcw,
       content: [
         {
@@ -155,6 +165,8 @@ export function TermsConditions() {
     {
       id: "user-conduct",
       title: "User Conduct",
+      color:'from-rose-500 to-rose-600',
+      check_color:'text-rose-600',
       icon: Users,
       content: [
         {
@@ -180,6 +192,8 @@ export function TermsConditions() {
     {
       id: "liability-disclaimers",
       title: "Liability and Disclaimers",
+      color:'from-lime-500 to-lime-600',
+      check_color:'text-lime-600',
       icon: Shield,
       content: [
         {
@@ -205,6 +219,8 @@ export function TermsConditions() {
     {
       id: "intellectual-property",
       title: "Intellectual Property",
+      color:'from-sky-500 to-sky-600',
+      check_color:'text-sky-600',
       icon: FileText,
       content: [
         {
@@ -313,8 +329,8 @@ export function TermsConditions() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 * index }}
               >
-                <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
-                  <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4">
+                <Card className="bg-white/80 backdrop-blur-sm py-0 border-0 shadow-lg overflow-hidden">
+                  <CardHeader className={`bg-gradient-to-r ${section.color} text-white p-4`}>
                     <CardTitle className="flex items-center text-lg">
                       <section.icon className="h-5 w-5 mr-2" />
                       {section.title}
@@ -327,7 +343,7 @@ export function TermsConditions() {
                         <ul className="space-y-2">
                           {subsection.items.map((item, itemIndex) => (
                             <li key={itemIndex} className="flex items-start space-x-2">
-                              <CheckCircle className="h-3 w-3 text-emerald-600 mt-1 flex-shrink-0" />
+                              <CheckCircle className={`h-3 w-3 ${section.check_color} mt-1 flex-shrink-0`} />
                               <span className="text-slate-700 text-sm leading-relaxed">{item}</span>
                             </li>
                           ))}
@@ -348,8 +364,8 @@ export function TermsConditions() {
             transition={{ delay: 0.8 }}
             className="mt-8"
           >
-            <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-lg overflow-hidden">
-              <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white p-4">
+            <Card className="bg-white/80 backdrop-blur-sm border-0 py-0 shadow-lg overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-indigo-600 to-indigo-600 text-white p-4">
                 <CardTitle className="flex items-center text-lg">
                   <Mail className="h-5 w-5 mr-2" />
                   Questions About Terms?
@@ -361,15 +377,15 @@ export function TermsConditions() {
                 </p>
                 <div className="space-y-3">
                   <div className="flex items-center space-x-3">
-                    <Mail className="h-4 w-4 text-emerald-600" />
+                    <Mail className="h-4 w-4 text-indigo-600" />
                     <span className="text-slate-700 text-sm">legal@ecostore.com</span>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Phone className="h-4 w-4 text-emerald-600" />
+                    <Phone className="h-4 w-4 text-indigo-600" />
                     <span className="text-slate-700 text-sm">+92 300 1234567</span>
                   </div>
                   <div className="flex items-start space-x-3">
-                    <MapPin className="h-4 w-4 text-emerald-600 mt-0.5" />
+                    <MapPin className="h-4 w-4 text-indigo-600 mt-0.5" />
                     <span className="text-slate-700 text-sm">123 Eco Street, Green City, Pakistan</span>
                   </div>
                 </div>
@@ -458,8 +474,8 @@ export function TermsConditions() {
               transition={{ delay: 0.1 * index }}
               className={index === sections.length - 1 && sections.length % 2 !== 0 ? "lg:col-span-2" : ""}
             >
-              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl overflow-hidden h-full">
-                <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl p-0 overflow-hidden h-full">
+                <CardHeader className={`bg-gradient-to-r ${section.color} text-white py-4`}>
                   <CardTitle className="flex items-center text-xl">
                     <section.icon className="h-6 w-6 mr-3" />
                     {section.title}
@@ -467,12 +483,13 @@ export function TermsConditions() {
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   {section.content.map((subsection, subIndex) => (
+
                     <div key={subIndex}>
                       <h4 className="font-semibold text-slate-900 mb-4 text-lg">{subsection.subtitle}</h4>
                       <ul className="space-y-3">
                         {subsection.items.map((item, itemIndex) => (
                           <li key={itemIndex} className="flex items-start space-x-3">
-                            <CheckCircle className="h-4 w-4 text-emerald-600 mt-1 flex-shrink-0" />
+                            <CheckCircle className={`h-4 w-4 ${section.check_color} mt-1 flex-shrink-0`} />
                             <span className="text-slate-700 leading-relaxed">{item}</span>
                           </li>
                         ))}
@@ -495,8 +512,8 @@ export function TermsConditions() {
           transition={{ delay: 0.8 }}
           className="mt-12"
         >
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl overflow-hidden max-w-4xl mx-auto">
-            <CardHeader className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white">
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl py-0 overflow-hidden max-w-4xl mx-auto">
+            <CardHeader className="bg-gradient-to-r from-indigo-600 to-indigo-600 py-4 text-white">
               <CardTitle className="flex items-center text-xl justify-center">
                 <Mail className="h-6 w-6 mr-3" />
                 Questions About These Terms?
@@ -510,18 +527,18 @@ export function TermsConditions() {
                 </p>
               </div>
               <div className="grid md:grid-cols-3 gap-6">
-                <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200">
-                  <Mail className="h-8 w-8 text-emerald-600 mx-auto mb-3" />
+                <div className="text-center p-6 bg-gradient-to-br from-red-50 to-red-100 rounded-2xl border border-red-200">
+                  <Mail className="h-8 w-8 text-red-600 mx-auto mb-3" />
                   <h4 className="font-semibold text-slate-900 mb-2">Email Legal Team</h4>
                   <p className="text-slate-700">legal@ecostore.com</p>
                 </div>
-                <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200">
-                  <Phone className="h-8 w-8 text-emerald-600 mx-auto mb-3" />
+                <div className="text-center p-6 bg-gradient-to-br from-yellow-50 to-yellow-50 rounded-2xl border border-yellow-200">
+                  <Phone className="h-8 w-8 text-yellow-600 mx-auto mb-3" />
                   <h4 className="font-semibold text-slate-900 mb-2">Call Us</h4>
                   <p className="text-slate-700">+92 300 1234567</p>
                 </div>
-                <div className="text-center p-6 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl border border-emerald-200">
-                  <MapPin className="h-8 w-8 text-emerald-600 mx-auto mb-3" />
+                <div className="text-center p-6 bg-gradient-to-br from-sky-50 to-sky-50 rounded-2xl border border-sky-200">
+                  <MapPin className="h-8 w-8 text-sky-600 mx-auto mb-3" />
                   <h4 className="font-semibold text-slate-900 mb-2">Visit Our Office</h4>
                   <p className="text-slate-700">123 Eco Street, Green City, Pakistan</p>
                 </div>
