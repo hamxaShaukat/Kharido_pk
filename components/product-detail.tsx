@@ -274,7 +274,7 @@ export function ProductDetail() {
         </div>
 
         {/* Mobile Content */}
-        <div className="bg-white rounded-t-3xl -mt-6 relative z-10 px-4 pt-6 pb-8 space-y-6">
+        <div className="bg-white rounded-t-3xl mt-6 relative z-10 px-4 pt-6 pb-8 space-y-6">
           {/* Mobile Header Info */}
           <div className="space-y-3">
             <div className="flex items-center space-x-2">
