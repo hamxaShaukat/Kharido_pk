@@ -29,7 +29,6 @@ export function AdminHeader() {
   const [userSession, setUserSession] = useState<
     UserMetadata | undefined | null
   >(null);
-  console.log(userSession?.picture , "User Session in Admin Header");
   useEffect(() => {
     async function fetchSession() {
       const userEmail = await getSession();

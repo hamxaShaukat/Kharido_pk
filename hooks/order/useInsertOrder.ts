@@ -3,7 +3,7 @@ import { createClient } from "@/utils/supabase/client";
 import { toast } from "sonner";
 import { readCart } from "../cart/use-read-cart";
 
-export const ConfirmOrder = async (addressId: number) => {
+export const ConfirmOrder = async (addressId: number, orderNum: string) => {
   const userId = await getSessionById();
   if (!userId) {
     toast.error("Kindly login first");
@@ -15,6 +15,7 @@ export const ConfirmOrder = async (addressId: number) => {
     toast.error("Your cart is empty");
     return;
   }
+
 
   const totalPrice = items.reduce(
     (sum, item) => sum + item.quantity * item.price,
@@ -30,6 +31,7 @@ export const ConfirmOrder = async (addressId: number) => {
       user_id: userId,
       status: "pending",
       address_id: addressId,
+      order_num:orderNum,
       total_amount: afterShippingPrice,
     })
     .select()
@@ -37,7 +39,7 @@ export const ConfirmOrder = async (addressId: number) => {
 
   if (orderError || !order) {
     toast.error(orderError?.message || "Order creation failed");
-    console.log("order->", orderError);
+ 
     return;
   }
 
@@ -58,7 +60,7 @@ export const ConfirmOrder = async (addressId: number) => {
 
   if (itemInsertError) {
     toast.error(itemInsertError.message);
-    console.log(itemInsertError,'error -> order items')
+    
     return;
   }
 

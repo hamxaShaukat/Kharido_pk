@@ -72,6 +72,8 @@ export function Checkout() {
     null
   );
 
+  const [orderNum, setOrderNum] = useState("");
+
   const getSelectedAddress = () => {
     return addresses.find((addr) => addr.id === selectedAddressId) || null;
   };
@@ -93,7 +95,6 @@ export function Checkout() {
   useEffect(() => {
     const selectedAddr = getSelectedAddress();
 
-    // console.log('first')
     if (selectedAddr) {
       setFormData({
         firstName: selectedAddr.first_name,
@@ -157,7 +158,7 @@ export function Checkout() {
     const addresID = getSelectedAddress();
 
     setIsProcessing(true);
-    await ConfirmOrder(addresID?.id ?? 0);
+    await ConfirmOrder(addresID?.id ?? 0, orderNum);
     setOrderComplete(true);
     setIsProcessing(false);
   };
@@ -177,6 +178,14 @@ export function Checkout() {
       toast.error("Error deleting address, please try again later");
     }
   };
+  function generateEcoId() {
+    const array = new Uint8Array(8);
+    crypto.getRandomValues(array);
+    const hex = Array.from(array)
+      .map((b) => b.toString(16).padStart(2, "0"))
+      .join("");
+    return `#ECO-${hex.slice(0, 8).toUpperCase()}`;
+  }
 
   async function fetchCart() {
     try {
@@ -199,6 +208,11 @@ export function Checkout() {
       setAddress(adresses);
     }
     fetchAddress();
+  }, []);
+
+  useEffect(() => {
+    const num = generateEcoId();
+    setOrderNum(num);
   }, []);
 
   useEffect(() => {
@@ -308,7 +322,8 @@ export function Checkout() {
                 <div className="flex justify-between text-sm sm:text-base">
                   <span className="text-slate-600">Order Number:</span>
                   <span className="font-mono text-base sm:text-lg font-bold text-emerald-600">
-                    #ECO-{Date.now().toString().slice(-6)}
+                    {orderNum}
+                    
                   </span>
                 </div>
                 <div className="flex justify-between text-sm sm:text-base">
@@ -475,7 +490,7 @@ export function Checkout() {
                             : `Rs ${shippingCost.toFixed(2)}`}
                         </span>
                       </div>
-                    
+
                       <Separator />
                       <div className="flex justify-between font-bold text-lg">
                         <span>Total</span>
@@ -1225,7 +1240,6 @@ export function Checkout() {
                           : `Rs ${shippingCost.toFixed(2)}`}
                       </span>
                     </div>
-                   
                   </div>
                   <Separator className="bg-gradient-to-r from-transparent via-emerald-200 to-transparent" />
                   <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">

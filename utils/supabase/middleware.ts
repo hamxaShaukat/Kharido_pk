@@ -5,7 +5,7 @@ export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   });
-  console.log("🟢 [utils/middleware] updateSession called");
+ 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -13,14 +13,11 @@ export async function updateSession(request: NextRequest) {
       cookies: {
         getAll() {
           const all = request.cookies.getAll();
-          console.log("🔵  [utils/middleware] Cookies retrieved:", all);
+         
           return request.cookies.getAll();
         },
         setAll(cookiesToSet) {
-          console.log(
-            "🟠  [utils/middleware] Cookies to set:",
-            cookiesToSet
-          );
+         
           cookiesToSet.forEach(({ name, value, options }) =>
             request.cookies.set(name, value)
           );
@@ -28,10 +25,7 @@ export async function updateSession(request: NextRequest) {
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>{
-            console.log(
-              `☂️ [utils/middleware] Setting cookie: ${name}=${value}, options: ${JSON.stringify(options)}`
-            );
-             console.log(`🟡 [utils/middleware] Setting cookie on response: ${name}`);
+          
             supabaseResponse.cookies.set(name, value, options)}
           );
         },
@@ -48,12 +42,12 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-   console.log("🧠 [utils/middleware] supabase.auth.getUser:", user);
+ 
 
   if (!user && !request.nextUrl.pathname.startsWith("/login")) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
-    console.log("🔴 [utils/middleware] No user found, redirecting to /login");
+   
     url.pathname = "/login";
     return NextResponse.redirect(url);
   }
@@ -70,6 +64,6 @@ export async function updateSession(request: NextRequest) {
   //    return myNewResponse
   // If this is not done, you may be causing the browser and server to go out
   // of sync and terminate the user's session prematurely!
-  console.log("✅ [utils/middleware] Returning supabaseResponse");
+  
   return supabaseResponse;
 }

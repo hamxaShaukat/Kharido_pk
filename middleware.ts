@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
   
   const authorizedEmails = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(",") || [];
   const isAdmin = user && authorizedEmails.includes(user.email || "");
-  // console.log("Is Admin:", isAdmin, "User Email:", user?.email);
+ 
 
  if( pathname.startsWith("/admin") && !isAdmin) {
     // If the user is not an admin and tries to access an admin route, redirect to the forbidden page

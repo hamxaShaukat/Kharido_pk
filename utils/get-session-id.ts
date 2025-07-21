@@ -10,9 +10,6 @@ export async function getSessionById() {
         console.error("Error fetching session:", error);
         return null;
     }
-    console.log(
-        "Session fetched successfully:",
-        session?.user.user_metadata
-    )
+  
     return session?.user.id;
 }

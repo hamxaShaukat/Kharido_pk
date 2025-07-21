@@ -209,7 +209,7 @@ export function ProductForm() {
         });
         showToast("error", "Failed to add product.");
       } else {
-        console.log("Product data:", data);
+    
         form.reset();
         setNewImageUrl("");
         showToast("success", "✅ Product added successfully!");

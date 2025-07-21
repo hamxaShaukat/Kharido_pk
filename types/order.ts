@@ -9,6 +9,7 @@ const enum ORDERSTATUS {
 export type Order = {
   id: string;
   address_id: number;
+  order_num: string;
   user_id: string;
   total_amount: number;
   status: ORDERSTATUS;
