@@ -1,58 +1,51 @@
 "use client";
-import { useState, useEffect } from "react";
-import type React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { deleteAddress } from "@/hooks/address/useDeleteAddress";
+import { fetchAddresses } from "@/hooks/address/useFetchAddresses";
+import { insertAddress } from "@/hooks/address/useInsertAddress";
+import { readCart } from "@/hooks/cart/use-read-cart";
+import { ConfirmOrder } from "@/hooks/order/useInsertOrder";
+import { Address } from "@/types/address";
+import type { CartItem } from "@/types/cart";
+import { createClient } from "@/utils/supabase/client";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  useCartItems,
-  useCartTotalItems,
-  useCartStore,
-} from "@/store/use-cart";
-import { useAddressStore } from "@/store/use-address";
-import {
-  Truck,
-  Shield,
-  CheckCircle,
-  Package,
   Banknote,
-  MapPin,
-  User,
-  Phone,
-  Mail,
-  Home,
-  Sparkles,
-  Gift,
-  Clock,
-  Heart,
-  Plus,
-  Edit,
-  Trash2,
-  Save,
-  CreditCard,
+  Check,
+  CheckCircle,
   ChevronDown,
   ChevronUp,
-  Check,
+  Clock,
+  CreditCard,
+  Gift,
+  Heart,
+  Home,
+  Mail,
+  MapPin,
+  Package,
+  Phone,
+  Plus,
+  Save,
+  Shield,
+  Sparkles,
+  Trash2,
+  Truck,
+  User
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { readCart } from "@/hooks/cart/use-read-cart";
-import type { CartItem } from "@/types/cart";
-import { insertAddress } from "@/hooks/address/useInsertAddress";
-import { fetchAddresses } from "@/hooks/address/useFetchAddresses";
-import { Address } from "@/types/address";
+import type React from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { deleteAddress } from "@/hooks/address/useDeleteAddress";
-import { createClient } from "@/utils/supabase/client";
-import { ConfirmOrder } from "@/hooks/order/useInsertOrder";
 
 export function Checkout() {
   const router = useRouter();
@@ -120,8 +113,8 @@ export function Checkout() {
     });
   };
 
-  const handleAddressSelection = (addressId: number) => {
-    setSelectedAddressId(addressId);
+  const handleAddressSelection = (addressId: string) => {
+    setSelectedAddressId(Number(addressId));
     setShowAddressForm(false);
   };
 
@@ -323,7 +316,6 @@ export function Checkout() {
                   <span className="text-slate-600">Order Number:</span>
                   <span className="font-mono text-base sm:text-lg font-bold text-emerald-600">
                     {orderNum}
-                    
                   </span>
                 </div>
                 <div className="flex justify-between text-sm sm:text-base">
@@ -517,7 +509,7 @@ export function Checkout() {
                 </CardHeader>
                 <CardContent className="p-4">
                   <RadioGroup
-                    value={selectedAddressId}
+                    value={selectedAddressId?.toString()}
                     onValueChange={handleAddressSelection}
                     className="space-y-3"
                   >
@@ -532,7 +524,7 @@ export function Checkout() {
                           }`}
                         >
                           <RadioGroupItem
-                            value={address.id}
+                            value={String(address.id)}
                             id={`address-${address.id}`}
                             className="mt-1 border-emerald-500 text-emerald-600"
                           />
@@ -863,7 +855,7 @@ export function Checkout() {
                     </CardHeader>
                     <CardContent className="p-6">
                       <RadioGroup
-                        value={selectedAddressId}
+                        value={selectedAddressId?.toString()}
                         onValueChange={handleAddressSelection}
                         className="space-y-4"
                       >
@@ -878,7 +870,7 @@ export function Checkout() {
                               }`}
                             >
                               <RadioGroupItem
-                                value={address.id}
+                                value={String(address.id)}
                                 id={`desktop-address-${address.id}`}
                                 className="mt-1 border-emerald-500 text-emerald-600"
                               />
