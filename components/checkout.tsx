@@ -52,6 +52,7 @@ import { Address } from "@/types/address";
 import { toast } from "sonner";
 import { deleteAddress } from "@/hooks/address/useDeleteAddress";
 import { createClient } from "@/utils/supabase/client";
+import { ConfirmOrder } from "@/hooks/order/useInsertOrder";
 
 export function Checkout() {
   const router = useRouter();
@@ -149,22 +150,14 @@ export function Checkout() {
     e.preventDefault();
 
     if (!getSelectedAddress() && addresses.length > 0) {
-      alert("Please select a delivery address");
+      toast.error("Please select a delivery address");
       return;
     }
 
-    if (
-      !formData.firstName ||
-      !formData.email ||
-      !formData.phone ||
-      !formData.address
-    ) {
-      alert("Please fill in all required fields");
-      return;
-    }
+    const addresID = getSelectedAddress();
 
     setIsProcessing(true);
-    await new Promise((resolve) => setTimeout(resolve, 3000));
+    await ConfirmOrder(addresID?.id ?? 0);
     setOrderComplete(true);
     setIsProcessing(false);
   };
@@ -174,8 +167,7 @@ export function Checkout() {
     0
   );
   const shippingCost = totalPrice > 5000 ? 0 : 150;
-  const tax = totalPrice * 0.08;
-  const finalTotal = totalPrice + shippingCost + tax;
+  const finalTotal = totalPrice + shippingCost;
 
   const handleDeleteAddress = async (id: number) => {
     try {
@@ -483,10 +475,7 @@ export function Checkout() {
                             : `Rs ${shippingCost.toFixed(2)}`}
                         </span>
                       </div>
-                      <div className="flex justify-between text-sm">
-                        <span>Tax</span>
-                        <span>Rs {tax.toFixed(2)}</span>
-                      </div>
+                    
                       <Separator />
                       <div className="flex justify-between font-bold text-lg">
                         <span>Total</span>
@@ -1236,10 +1225,7 @@ export function Checkout() {
                           : `Rs ${shippingCost.toFixed(2)}`}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-700">Tax</span>
-                      <span className="font-medium">Rs {tax.toFixed(2)}</span>
-                    </div>
+                   
                   </div>
                   <Separator className="bg-gradient-to-r from-transparent via-emerald-200 to-transparent" />
                   <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-4 rounded-xl border border-emerald-200">
