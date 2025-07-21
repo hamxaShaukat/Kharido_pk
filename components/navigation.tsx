@@ -11,7 +11,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-import { useCartTotalItems } from "@/store/use-cart";
+import {
+  useCartActions,
+  useCartStore,
+  useCartTotalItems,
+} from "@/store/use-cart";
 import { getSession } from "@/utils/getSession";
 import { UserMetadata } from "@supabase/supabase-js";
 import { motion } from "framer-motion";
@@ -25,7 +29,7 @@ import {
   Package,
   Search,
   Settings,
-  User
+  User,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -42,15 +46,13 @@ const mockSession = {
 
 export function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const clearCart = useCartStore.getState().clearCart;
+
   const router = useRouter();
   const [userSession, setUserSession] = useState<
     UserMetadata | undefined | null
   >(null);
   const totalItems = useCartTotalItems();
-
-  // Replace this with your actual session logic
-  const [session, setSession] = useState<typeof mockSession | null>(null); // Change to mockSession to test logged in state
-  const isLoggedIn = !!session;
 
   const handleLogin = () => {
     router.push("/login");
@@ -66,8 +68,11 @@ export function Navigation() {
   }, []);
 
   const handleLogout = async () => {
+    await clearCart(); 
+    await signOut(); 
     await signOut();
     setUserSession(null);
+
     router.push("/");
   };
 

@@ -44,7 +44,8 @@ import categories from "@/constants/categories";
 import { createClient } from "@/utils/supabase/client";
 import type { Product } from "@/types/product";
 import { useRouter, useSearchParams } from "next/navigation";
-
+import { insertOrUpdateCartItem } from "@/hooks/cart/use-create-cart";
+import { toast } from "sonner";
 const sortOptions = [
   { value: "featured", label: "Featured" },
   { value: "price-low", label: "Price: Low to High" },
@@ -157,10 +158,9 @@ export function ProductListing() {
     fetchProducts();
   }, []);
 
-    const goToProduct = (id: string) => {
-    router.push(`/product/${id}`)
-  }
-
+  const goToProduct = (id: string) => {
+    router.push(`/product/${id}`);
+  };
 
   useEffect(() => {
     if (categoryFromURL) {
@@ -549,6 +549,7 @@ export function ProductListing() {
                           transition={{ duration: 0.6, delay: index * 0.05 }}
                           onHoverStart={() => setHoveredProduct(product.uu_id)}
                           onHoverEnd={() => setHoveredProduct(null)}
+                          onClick={()=>router.push(`/product/${product.uu_id}`)}
                           className="group"
                         >
                           <Card className="relative overflow-hidden border-0 bg-gradient-to-br from-white via-white to-slate-50/50 shadow-xl hover:shadow-2xl transition-all duration-700 cursor-pointer transform hover:-translate-y-2 sm:hover:-translate-y-3">
@@ -732,57 +733,7 @@ export function ProductListing() {
                                         </p>
                                       )}
                                   </div>
-                                  {/* Action Buttons */}
-                                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
-                                    <motion.div
-                                      whileHover={{ scale: 1.02 }}
-                                      whileTap={{ scale: 0.98 }}
-                                      className="flex-1"
-                                    >
-                                      <Button
-                                        size="sm"
-                                        variant="outline"
-                                        className="w-full border-emerald-500 text-emerald-600 hover:bg-emerald-50 bg-transparent h-9 sm:h-10"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          goToProduct(product.uu_id);
-                                        }}
-                                      >
-                                        <Eye className="h-3 sm:h-4 w-3 sm:w-4 mr-1 sm:mr-2" />
-                                        <span className="text-xs sm:text-sm">
-                                          View
-                                        </span>
-                                      </Button>
-                                    </motion.div>
-                                    <motion.div
-                                      whileHover={{ scale: 1.02 }}
-                                      whileTap={{ scale: 0.98 }}
-                                      className="flex-1"
-                                    >
-                                      <Button
-                                        size="sm"
-                                        disabled={product.stock === 0}
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          addToCart({
-                                            id: product.uu_id,
-                                            name: product.title,
-                                            price: product.price,
-                                            originalPrice:
-                                              product.original_price,
-                                            thumbnail: product.thumbnail,
-                                            stock: product.stock,
-                                          });
-                                        }}
-                                        className="w-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 h-9 sm:h-10"
-                                      >
-                                        <ShoppingCart className="h-3 sm:h-4 w-3 sm:w-4 mr-1" />
-                                        <span className="text-xs sm:text-sm">
-                                          Add to Cart
-                                        </span>
-                                      </Button>
-                                    </motion.div>
-                                  </div>
+                              
                                 </div>
                               </div>
                             </CardContent>

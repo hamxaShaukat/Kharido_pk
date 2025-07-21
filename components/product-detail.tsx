@@ -1,8 +1,8 @@
-"use client"
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+"use client";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Heart,
   ShoppingCart,
@@ -24,31 +24,33 @@ import {
   Clock,
   ChevronLeft,
   Star,
-} from "lucide-react"
-import Image from "next/image"
-import { useParams, useRouter } from "next/navigation"
-import { useCartStore } from "@/store/use-cart"
-import { createClient } from "@/utils/supabase/client"
-import type { Product } from "@/types/product"
+} from "lucide-react";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { useCartStore } from "@/store/use-cart";
+import { createClient } from "@/utils/supabase/client";
+import type { Product } from "@/types/product";
+import { insertOrUpdateCartItem } from "@/hooks/cart/use-create-cart";
+import { toast } from "sonner";
 
 export function ProductDetail() {
-  const router = useRouter()
-  const [product, setProduct] = useState<Product | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
-  const [selectedImage, setSelectedImage] = useState(0)
-  const [quantity, setQuantity] = useState(1)
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const [imageLoading, setImageLoading] = useState(true)
+  const router = useRouter();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedImage, setSelectedImage] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
 
-  const params: { [key: string]: string | string[] | undefined } = useParams()
-  const id = params.id as string | undefined
+  const params: { [key: string]: string | string[] | undefined } = useParams();
+  const id = params.id as string | undefined;
 
-  const addToCart = useCartStore((state) => state.addToCart)
-  const getItemQuantity = useCartStore((state) => state.getItemQuantity)
-  const supabase = createClient()
+  const addToCart = useCartStore((state) => state.addToCart);
+  const getItemQuantity = useCartStore((state) => state.getItemQuantity);
+  const supabase = createClient();
 
   const handleAddToCart = () => {
-    if (!product) return
+    if (!product) return;
     for (let i = 0; i < quantity; i++) {
       addToCart({
         id: product.uu_id,
@@ -57,41 +59,48 @@ export function ProductDetail() {
         originalPrice: product.original_price,
         thumbnail: product.thumbnail,
         stock: product.stock,
-      })
+      });
     }
-  }
+  };
 
-  const currentQuantityInCart = product ? getItemQuantity(product.uu_id) : 0
+  const currentQuantityInCart = product ? getItemQuantity(product.uu_id) : 0;
   const discountPercentage = product?.original_price
-    ? Math.round(((product.original_price - product.price) / product.original_price) * 100)
-    : 0
+    ? Math.round(
+        ((product.original_price - product.price) / product.original_price) *
+          100
+      )
+    : 0;
 
   useEffect(() => {
     const fetchProduct = async () => {
       if (!id) {
-        setLoading(false)
-        return
+        setLoading(false);
+        return;
       }
       try {
-        setLoading(true)
-        const { data, error } = await supabase.from("products").select("*").eq("uu_id", id).single()
-        if (error) throw error
-        setProduct(data)
-        setSelectedImage(0)
-        setQuantity(1)
+        setLoading(true);
+        const { data, error } = await supabase
+          .from("products")
+          .select("*")
+          .eq("uu_id", id)
+          .single();
+        if (error) throw error;
+        setProduct(data);
+        setSelectedImage(0);
+        setQuantity(1);
       } catch (error) {
-        console.error("Error fetching product:", error)
-        setProduct(null)
+        console.error("Error fetching product:", error);
+        setProduct(null);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchProduct()
-  }, [id, supabase])
+    };
+    fetchProduct();
+  }, [id, supabase]);
 
   const handleMainImageLoad = () => {
-    setImageLoading(false)
-  }
+    setImageLoading(false);
+  };
 
   if (loading) {
     return (
@@ -139,7 +148,10 @@ export function ProductDetail() {
                 </div>
                 <div className="space-y-2">
                   {[...Array(4)].map((_, i) => (
-                    <div key={i} className="h-4 bg-gradient-to-r from-slate-200 to-slate-300 rounded animate-pulse" />
+                    <div
+                      key={i}
+                      className="h-4 bg-gradient-to-r from-slate-200 to-slate-300 rounded animate-pulse"
+                    />
                   ))}
                 </div>
                 <div className="h-12 bg-gradient-to-r from-slate-200 to-slate-300 rounded-2xl animate-pulse" />
@@ -148,7 +160,7 @@ export function ProductDetail() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (!product) {
@@ -156,7 +168,9 @@ export function ProductDetail() {
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/50 flex items-center justify-center p-4">
         <div className="text-center bg-white/80 backdrop-blur-sm rounded-3xl p-6 sm:p-8 shadow-xl border border-slate-200/50 max-w-md mx-auto">
           <Package className="h-14 w-14 sm:h-16 sm:w-16 text-slate-400 mx-auto mb-4" />
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">Product Not Found</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
+            Product Not Found
+          </h2>
           <p className="text-sm sm:text-base text-slate-600 mb-6">
             The product you're looking for doesn't exist or an error occurred.
           </p>
@@ -169,10 +183,13 @@ export function ProductDetail() {
           </Button>
         </div>
       </div>
-    )
+    );
   }
 
-  const productImages = product.images && product.images.length > 0 ? product.images : [product.thumbnail]
+  const productImages =
+    product.images && product.images.length > 0
+      ? product.images
+      : [product.thumbnail];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/50 relative overflow-hidden">
@@ -185,7 +202,12 @@ export function ProductDetail() {
         {/* Mobile Header */}
         <div className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200/50 px-4 py-3">
           <div className="flex items-center justify-between">
-            <Button variant="ghost" size="icon" onClick={() => router.back()} className="h-10 w-10 rounded-full">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.back()}
+              className="h-10 w-10 rounded-full"
+            >
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <div className="flex items-center space-x-2">
@@ -197,11 +219,17 @@ export function ProductDetail() {
               >
                 <Heart
                   className={`h-5 w-5 transition-all duration-300 ${
-                    isWishlisted ? "fill-red-500 text-red-500" : "text-slate-600"
+                    isWishlisted
+                      ? "fill-red-500 text-red-500"
+                      : "text-slate-600"
                   }`}
                 />
               </Button>
-              <Button variant="ghost" size="icon" className="h-10 w-10 rounded-full">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-10 w-10 rounded-full"
+              >
                 <Share2 className="h-5 w-5 text-slate-600" />
               </Button>
             </div>
@@ -247,11 +275,19 @@ export function ProductDetail() {
             <div className="absolute bottom-4 left-4">
               <Badge
                 className={`${
-                  product.stock > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                  product.stock > 0
+                    ? "bg-green-100 text-green-700"
+                    : "bg-red-100 text-red-700"
                 } border-0 shadow-lg backdrop-blur-sm`}
               >
-                <div className={`w-2 h-2 rounded-full mr-2 ${product.stock > 0 ? "bg-green-500" : "bg-red-500"}`} />
-                {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                <div
+                  className={`w-2 h-2 rounded-full mr-2 ${
+                    product.stock > 0 ? "bg-green-500" : "bg-red-500"
+                  }`}
+                />
+                {product.stock > 0
+                  ? `${product.stock} in stock`
+                  : "Out of stock"}
               </Badge>
             </div>
           </div>
@@ -262,11 +298,13 @@ export function ProductDetail() {
               <button
                 key={index}
                 onClick={() => {
-                  setSelectedImage(index)
-                  setImageLoading(true)
+                  setSelectedImage(index);
+                  setImageLoading(true);
                 }}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
-                  selectedImage === index ? "bg-emerald-500 scale-125" : "bg-slate-300"
+                  selectedImage === index
+                    ? "bg-emerald-500 scale-125"
+                    : "bg-slate-300"
                 }`}
               />
             ))}
@@ -283,36 +321,48 @@ export function ProductDetail() {
               </Badge>
               <div className="flex items-center space-x-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                  <Star
+                    key={i}
+                    className="w-3 h-3 fill-yellow-400 text-yellow-400"
+                  />
                 ))}
                 <span className="text-xs text-slate-500 ml-1">(4.8)</span>
               </div>
             </div>
 
-            <h1 className="text-2xl font-bold text-slate-900 leading-tight">{product.title}</h1>
+            <h1 className="text-2xl font-bold text-slate-900 leading-tight">
+              {product.title}
+            </h1>
 
             {/* Mobile Price */}
             <div className="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 border border-emerald-100">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="flex items-center space-x-2">
-                    <span className="text-3xl font-bold text-emerald-600">Rs {product.price.toFixed(2)}</span>
-                    {product.original_price && product.original_price > product.price && (
-                      <span className="text-lg text-slate-500 line-through">
-                        Rs {product.original_price.toFixed(2)}
-                      </span>
-                    )}
+                    <span className="text-3xl font-bold text-emerald-600">
+                      Rs {product.price.toFixed(2)}
+                    </span>
+                    {product.original_price &&
+                      product.original_price > product.price && (
+                        <span className="text-lg text-slate-500 line-through">
+                          Rs {product.original_price.toFixed(2)}
+                        </span>
+                      )}
                   </div>
-                  {product.original_price && product.original_price > product.price && (
-                    <p className="text-green-600 font-semibold text-sm flex items-center mt-1">
-                      <Sparkles className="w-3 h-3 mr-1" />
-                      You save Rs {(product.original_price - product.price).toFixed(2)}
-                    </p>
-                  )}
+                  {product.original_price &&
+                    product.original_price > product.price && (
+                      <p className="text-green-600 font-semibold text-sm flex items-center mt-1">
+                        <Sparkles className="w-3 h-3 mr-1" />
+                        You save Rs{" "}
+                        {(product.original_price - product.price).toFixed(2)}
+                      </p>
+                    )}
                 </div>
                 {discountPercentage > 0 && (
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-red-600">{discountPercentage}%</div>
+                    <div className="text-2xl font-bold text-red-600">
+                      {discountPercentage}%
+                    </div>
                     <div className="text-xs text-red-600">OFF</div>
                   </div>
                 )}
@@ -326,7 +376,9 @@ export function ProductDetail() {
               <Eye className="w-4 h-4 mr-2 text-emerald-600" />
               Description
             </h3>
-            <p className="text-sm text-slate-700 leading-relaxed">{product.description}</p>
+            <p className="text-sm text-slate-700 leading-relaxed">
+              {product.description}
+            </p>
           </div>
 
           {/* Mobile Quantity & Cart */}
@@ -334,7 +386,9 @@ export function ProductDetail() {
             <div className="flex items-center justify-between">
               <span className="font-semibold text-slate-900">Quantity</span>
               {currentQuantityInCart > 0 && (
-                <Badge className="bg-emerald-100 text-emerald-700 text-xs">{currentQuantityInCart} in cart</Badge>
+                <Badge className="bg-emerald-100 text-emerald-700 text-xs">
+                  {currentQuantityInCart} in cart
+                </Badge>
               )}
             </div>
 
@@ -349,18 +403,24 @@ export function ProductDetail() {
                 >
                   <Minus className="h-4 w-4" />
                 </Button>
-                <span className="px-6 py-3 font-semibold text-lg min-w-[60px] text-center">{quantity}</span>
+                <span className="px-6 py-3 font-semibold text-lg min-w-[60px] text-center">
+                  {quantity}
+                </span>
                 <Button
                   variant="ghost"
                   size="icon"
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  onClick={() =>
+                    setQuantity(Math.min(product.stock, quantity + 1))
+                  }
                   disabled={quantity >= product.stock}
                   className="h-12 w-12 rounded-r-xl"
                 >
                   <Plus className="h-4 w-4" />
                 </Button>
               </div>
-              <span className="text-sm text-slate-600">Max: {product.stock}</span>
+              <span className="text-sm text-slate-600">
+                Max: {product.stock}
+              </span>
             </div>
           </div>
 
@@ -368,11 +428,15 @@ export function ProductDetail() {
           <div className="grid grid-cols-3 gap-3">
             <div className="flex flex-col items-center space-y-2 text-center p-3 bg-emerald-50 rounded-xl">
               <Truck className="h-6 w-6 text-emerald-600" />
-              <span className="text-xs font-medium text-slate-700">Free Ship</span>
+              <span className="text-xs font-medium text-slate-700">
+                Free Ship
+              </span>
             </div>
             <div className="flex flex-col items-center space-y-2 text-center p-3 bg-teal-50 rounded-xl">
               <RotateCcw className="h-6 w-6 text-teal-600" />
-              <span className="text-xs font-medium text-slate-700">Returns</span>
+              <span className="text-xs font-medium text-slate-700">
+                Returns
+              </span>
             </div>
             <div className="flex flex-col items-center space-y-2 text-center p-3 bg-cyan-50 rounded-xl">
               <Shield className="h-6 w-6 text-cyan-600" />
@@ -384,7 +448,23 @@ export function ProductDetail() {
         {/* Mobile Sticky Bottom */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 z-50">
           <Button
-            onClick={handleAddToCart}
+            onClick={async (e) => {
+              e.stopPropagation();
+
+              try {
+                await insertOrUpdateCartItem({
+                  id: product.uu_id,
+                  name: product.title,
+                  price: product.price,
+                  originalPrice: product.original_price,
+                  thumbnail: product.thumbnail,
+                  stock: product.stock,
+                  quantity: quantity,
+                });
+              } catch (err) {
+                toast.error("Please log in to add to cart");
+              }
+            }}
             disabled={product.stock === 0 || quantity === 0}
             className="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white py-4 rounded-2xl font-semibold text-lg shadow-xl disabled:opacity-50"
           >
@@ -402,16 +482,26 @@ export function ProductDetail() {
           animate={{ opacity: 1, y: 0 }}
           className="flex items-center space-x-1.5 text-xs sm:text-sm text-slate-600 mb-6 sm:mb-8 bg-white/60 backdrop-blur-sm rounded-full px-3 sm:px-4 py-1.5 sm:py-2 w-fit shadow-md"
         >
-          <button onClick={() => router.push("/")} className="hover:text-emerald-600 transition-colors">
+          <button
+            onClick={() => router.push("/")}
+            className="hover:text-emerald-600 transition-colors"
+          >
             Home
           </button>
           <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
-          <button onClick={() => router.push("/products")} className="hover:text-emerald-600 transition-colors">
+          <button
+            onClick={() => router.push("/products")}
+            className="hover:text-emerald-600 transition-colors"
+          >
             Products
           </button>
           <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
           <button
-            onClick={() => router.push(`/products?category=${encodeURIComponent(product.category)}`)}
+            onClick={() =>
+              router.push(
+                `/products?category=${encodeURIComponent(product.category)}`
+              )
+            }
             className="hover:text-emerald-600 transition-colors"
           >
             {product.category}
@@ -462,7 +552,10 @@ export function ProductDetail() {
 
                 {/* Desktop Floating Action Buttons */}
                 <div className="absolute top-3 right-3 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     <Button
                       variant="secondary"
                       size="icon"
@@ -471,12 +564,17 @@ export function ProductDetail() {
                     >
                       <Heart
                         className={`h-4 w-4 sm:h-5 sm:w-5 transition-all duration-300 ${
-                          isWishlisted ? "fill-red-500 text-red-500 scale-110" : "text-slate-600"
+                          isWishlisted
+                            ? "fill-red-500 text-red-500 scale-110"
+                            : "text-slate-600"
                         }`}
                       />
                     </Button>
                   </motion.div>
-                  <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.95 }}
+                  >
                     <Button
                       variant="secondary"
                       size="icon"
@@ -509,13 +607,19 @@ export function ProductDetail() {
                 <div className="absolute bottom-3 left-3">
                   <Badge
                     className={`${
-                      product.stock > 0 ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                      product.stock > 0
+                        ? "bg-green-100 text-green-700"
+                        : "bg-red-100 text-red-700"
                     } border-0 shadow-lg backdrop-blur-sm text-xs sm:text-sm`}
                   >
                     <div
-                      className={`w-2 h-2 rounded-full mr-1.5 ${product.stock > 0 ? "bg-green-500" : "bg-red-500"}`}
+                      className={`w-2 h-2 rounded-full mr-1.5 ${
+                        product.stock > 0 ? "bg-green-500" : "bg-red-500"
+                      }`}
                     />
-                    {product.stock > 0 ? `${product.stock} in stock` : "Out of stock"}
+                    {product.stock > 0
+                      ? `${product.stock} in stock`
+                      : "Out of stock"}
                   </Badge>
                 </div>
               </motion.div>
@@ -527,8 +631,8 @@ export function ProductDetail() {
                 <motion.button
                   key={index}
                   onClick={() => {
-                    setSelectedImage(index)
-                    setImageLoading(true)
+                    setSelectedImage(index);
+                    setImageLoading(true);
                   }}
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -563,9 +667,14 @@ export function ProductDetail() {
                 <Badge className="bg-gradient-to-r from-emerald-100 to-teal-100 text-emerald-700 border border-emerald-200/50 px-2.5 py-1 font-semibold text-xs sm:text-sm">
                   {product.category}
                 </Badge>
-                <Badge variant="outline" className="bg-white/60 backdrop-blur-sm px-2.5 py-1 text-xs sm:text-sm">
+                <Badge
+                  variant="outline"
+                  className="bg-white/60 backdrop-blur-sm px-2.5 py-1 text-xs sm:text-sm"
+                >
                   <Calendar className="w-3 h-3 mr-1" />
-                  {product.created_at ? new Date(product.created_at).toLocaleDateString() : "N/A"}
+                  {product.created_at
+                    ? new Date(product.created_at).toLocaleDateString()
+                    : "N/A"}
                 </Badge>
               </div>
               <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 leading-tight">
@@ -580,22 +689,27 @@ export function ProductDetail() {
                       <span className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-slate-800 to-emerald-700 bg-clip-text text-transparent">
                         Rs {product.price.toFixed(2)}
                       </span>
-                      {product.original_price && product.original_price > product.price && (
-                        <span className="text-xl sm:text-2xl text-slate-500 line-through">
-                          Rs {product.original_price.toFixed(2)}
-                        </span>
-                      )}
+                      {product.original_price &&
+                        product.original_price > product.price && (
+                          <span className="text-xl sm:text-2xl text-slate-500 line-through">
+                            Rs {product.original_price.toFixed(2)}
+                          </span>
+                        )}
                     </div>
-                    {product.original_price && product.original_price > product.price && (
-                      <p className="text-green-600 font-semibold flex items-center text-xs sm:text-sm">
-                        <Sparkles className="w-3.5 h-3.5 mr-1" />
-                        You save Rs {(product.original_price - product.price).toFixed(2)}
-                      </p>
-                    )}
+                    {product.original_price &&
+                      product.original_price > product.price && (
+                        <p className="text-green-600 font-semibold flex items-center text-xs sm:text-sm">
+                          <Sparkles className="w-3.5 h-3.5 mr-1" />
+                          You save Rs{" "}
+                          {(product.original_price - product.price).toFixed(2)}
+                        </p>
+                      )}
                   </div>
                   {discountPercentage > 0 && (
                     <div className="text-right flex-shrink-0">
-                      <div className="text-2xl sm:text-3xl font-bold text-red-600">{discountPercentage}%</div>
+                      <div className="text-2xl sm:text-3xl font-bold text-red-600">
+                        {discountPercentage}%
+                      </div>
                       <div className="text-sm text-red-600">OFF</div>
                     </div>
                   )}
@@ -609,14 +723,18 @@ export function ProductDetail() {
                 <Eye className="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-emerald-600" />
                 Product Description
               </h3>
-              <p className="text-sm sm:text-base text-slate-700 leading-relaxed">{product.description}</p>
+              <p className="text-sm sm:text-base text-slate-700 leading-relaxed">
+                {product.description}
+              </p>
             </div>
 
             {/* Desktop Quantity and Add to Cart */}
             <div className="space-y-4 sm:space-y-6">
               <div className="bg-white/60 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-slate-200/50 shadow-md">
                 <div className="flex items-center justify-between mb-3 sm:mb-4">
-                  <span className="font-semibold text-slate-900 text-sm sm:text-base">Quantity</span>
+                  <span className="font-semibold text-slate-900 text-sm sm:text-base">
+                    Quantity
+                  </span>
                   {currentQuantityInCart > 0 && (
                     <Badge className="bg-emerald-100 text-emerald-700 text-xs sm:text-sm">
                       {currentQuantityInCart} in cart
@@ -640,25 +758,50 @@ export function ProductDetail() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                      onClick={() =>
+                        setQuantity(Math.min(product.stock, quantity + 1))
+                      }
                       disabled={quantity >= product.stock}
                       className="h-9 w-9 sm:h-10 sm:w-10 rounded-r-xl"
                     >
                       <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                     </Button>
                   </div>
-                  <div className="text-xs sm:text-sm text-slate-600">Max: {product.stock} available</div>
+                  <div className="text-xs sm:text-sm text-slate-600">
+                    Max: {product.stock} available
+                  </div>
                 </div>
               </div>
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
                 <Button
-                  onClick={handleAddToCart}
+                  onClick={async (e) => {
+                    e.stopPropagation();
+
+                    try {
+                      await insertOrUpdateCartItem({
+                        id: product.uu_id,
+                        name: product.title,
+                        price: product.price,
+                        originalPrice: product.original_price,
+                        thumbnail: product.thumbnail,
+                        stock: product.stock,
+                        quantity: quantity,
+                      });
+                    } catch (err) {
+                      toast.error("Please log in to add to cart");
+                    }
+                  }}
                   disabled={product.stock === 0 || quantity === 0}
                   size="lg"
                   className="w-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white py-3 sm:py-4 rounded-xl sm:rounded-2xl font-semibold text-base sm:text-lg shadow-2xl hover:shadow-emerald-500/25 transition-all duration-300 disabled:opacity-50"
                 >
                   <ShoppingCart className="h-5 w-5 sm:h-6 sm:w-6 mr-2 sm:mr-3" />
-                  {product.stock === 0 ? "Out of Stock" : `Add ${quantity} to Cart`}
+                  {product.stock === 0
+                    ? "Out of Stock"
+                    : `Add ${quantity} to Cart`}
                 </Button>
               </motion.div>
             </div>
@@ -672,8 +815,12 @@ export function ProductDetail() {
                 <div className="w-9 h-9 sm:w-10 sm:h-10 bg-emerald-100 rounded-full flex items-center justify-center">
                   <Truck className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-emerald-600" />
                 </div>
-                <span className="text-sm font-medium text-slate-700">Free Shipping</span>
-                <span className="text-xs text-slate-500">On orders over Rs 5000</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Free Shipping
+                </span>
+                <span className="text-xs text-slate-500">
+                  On orders over Rs 5000
+                </span>
               </motion.div>
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -682,8 +829,12 @@ export function ProductDetail() {
                 <div className="w-9 h-9 sm:w-10 sm:h-10 bg-teal-100 rounded-full flex items-center justify-center">
                   <RotateCcw className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-teal-600" />
                 </div>
-                <span className="text-sm font-medium text-slate-700">7-Day Returns</span>
-                <span className="text-xs text-slate-500">Hassle-free returns</span>
+                <span className="text-sm font-medium text-slate-700">
+                  7-Day Returns
+                </span>
+                <span className="text-xs text-slate-500">
+                  Hassle-free returns
+                </span>
               </motion.div>
               <motion.div
                 whileHover={{ scale: 1.05 }}
@@ -692,8 +843,12 @@ export function ProductDetail() {
                 <div className="w-9 h-9 sm:w-10 sm:h-10 bg-cyan-100 rounded-full flex items-center justify-center">
                   <Shield className="h-4.5 w-4.5 sm:h-5 sm:w-5 text-cyan-600" />
                 </div>
-                <span className="text-sm font-medium text-slate-700">Secure Payment</span>
-                <span className="text-xs text-slate-500">256-bit SSL encryption</span>
+                <span className="text-sm font-medium text-slate-700">
+                  Secure Payment
+                </span>
+                <span className="text-xs text-slate-500">
+                  256-bit SSL encryption
+                </span>
               </motion.div>
             </div>
           </motion.div>
@@ -721,26 +876,46 @@ export function ProductDetail() {
               </h3>
               <div className="space-y-2 sm:space-y-3">
                 <div className="flex justify-between py-2 border-b border-slate-100">
-                  <span className="font-medium text-slate-900 text-sm sm:text-base">Product ID</span>
-                  <span className="text-slate-600 font-mono text-xs sm:text-sm">{product.uu_id.slice(0, 8)}...</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base">
+                    Product ID
+                  </span>
+                  <span className="text-slate-600 font-mono text-xs sm:text-sm">
+                    {product.uu_id.slice(0, 8)}...
+                  </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100">
-                  <span className="font-medium text-slate-900 text-sm sm:text-base">Category</span>
-                  <Badge className="bg-emerald-50 text-emerald-700 text-xs sm:text-sm">{product.category}</Badge>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base">
+                    Category
+                  </span>
+                  <Badge className="bg-emerald-50 text-emerald-700 text-xs sm:text-sm">
+                    {product.category}
+                  </Badge>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100">
-                  <span className="font-medium text-slate-900 text-sm sm:text-base">Stock Status</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base">
+                    Stock Status
+                  </span>
                   <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full ${product.stock > 0 ? "bg-green-500" : "bg-red-500"}`} />
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        product.stock > 0 ? "bg-green-500" : "bg-red-500"
+                      }`}
+                    />
                     <span className="text-slate-600 text-sm sm:text-base">
-                      {product.stock > 0 ? `${product.stock} available` : "Out of stock"}
+                      {product.stock > 0
+                        ? `${product.stock} available`
+                        : "Out of stock"}
                     </span>
                   </div>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100">
-                  <span className="font-medium text-slate-900 text-sm sm:text-base">Added Date</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base">
+                    Added Date
+                  </span>
                   <span className="text-slate-600 text-sm sm:text-base">
-                    {product.created_at ? new Date(product.created_at).toLocaleDateString() : "N/A"}
+                    {product.created_at
+                      ? new Date(product.created_at).toLocaleDateString()
+                      : "N/A"}
                   </span>
                 </div>
               </div>
@@ -753,7 +928,9 @@ export function ProductDetail() {
               <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-emerald-200/50 shadow-md">
                 <div className="space-y-3 sm:space-y-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-slate-700 text-sm sm:text-base">Current Price</span>
+                    <span className="text-slate-700 text-sm sm:text-base">
+                      Current Price
+                    </span>
                     <span className="text-xl sm:text-2xl font-bold text-emerald-600">
                       Rs {product.price.toFixed(2)}
                     </span>
@@ -761,15 +938,21 @@ export function ProductDetail() {
                   {product.original_price && (
                     <>
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-700 text-sm sm:text-base">Original Price</span>
+                        <span className="text-slate-700 text-sm sm:text-base">
+                          Original Price
+                        </span>
                         <span className="text-sm sm:text-base text-slate-500 line-through">
                           Rs {product.original_price.toFixed(2)}
                         </span>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-slate-700 text-sm sm:text-base">You Save</span>
+                        <span className="text-slate-700 text-sm sm:text-base">
+                          You Save
+                        </span>
                         <span className="text-sm sm:text-base font-semibold text-green-600">
-                          Rs {(product.original_price - product.price).toFixed(2)} ({discountPercentage}%)
+                          Rs{" "}
+                          {(product.original_price - product.price).toFixed(2)}{" "}
+                          ({discountPercentage}%)
                         </span>
                       </div>
                     </>
@@ -781,5 +964,5 @@ export function ProductDetail() {
         </motion.div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,75 +1,199 @@
-"use client"
-import { motion, AnimatePresence } from "framer-motion"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { useCartItems, useCartTotalItems, useCartTotalPrice, useCartStore } from "@/store/use-cart"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"
+"use client";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  ShoppingCart,
-  Plus,
-  Minus,
-  Trash2,
-  ShoppingBag,
-  ArrowRight,
-  Sparkles,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { fullyDeleteCartItem } from "@/hooks/cart/use-delete-cart";
+import { readCart } from "@/hooks/cart/use-read-cart";
+import {
+  deleteCartItem,
+  updateCartQuantity,
+} from "@/hooks/cart/useUpdateCartQuntity";
+import {
+  useCartItems,
+  useCartStore,
+  useCartTotalItems
+} from "@/store/use-cart";
+import { CartItem } from "@/types/cart";
+import { createClient } from "@/utils/supabase/client";
+import { AnimatePresence, motion } from "framer-motion";
+import {
   AlertTriangle,
-  Package2,
+  ArrowRight,
   CreditCard,
   Eye,
-} from "lucide-react"
-import Image from "next/image"
-import { useRouter } from "next/navigation"
-import React, { useState, useEffect } from "react"
+  Minus,
+  Package2,
+  Plus,
+  ShoppingBag,
+  ShoppingCart,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import {
+  CopperLoading
+} from "respinner";
 
 export function CartDropdown() {
-  const items = useCartItems()
-  const totalItems = useCartTotalItems()
-  const totalPrice = useCartTotalPrice()
-  const updateQuantity = useCartStore((state) => state.updateQuantity)
-  const removeFromCart = useCartStore((state) => state.removeFromCart)
-  const clearCart = useCartStore((state) => state.clearCart)
-  const router = useRouter()
-  const [isOpen, setIsOpen] = useState(false)
-  const [dropdownHeight, setDropdownHeight] = useState("auto")
+  const items = useCartItems();
+  const totalItems = useCartTotalItems();
+  // const totalPrice = useCartTotalPrice();
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const clearCart = useCartStore((state) => state.clearCart);
+  const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [dropdownHeight, setDropdownHeight] = useState("auto");
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+  const supabase = createClient();
 
   // Calculate optimal dropdown height based on viewport
   useEffect(() => {
     const calculateDropdownHeight = () => {
-      const viewportHeight = window.innerHeight
-      const headerHeight = 80 // Approximate header height
-      const footerSpace = 20 // Space from bottom
-      const maxHeight = viewportHeight - headerHeight - footerSpace
+      const viewportHeight = window.innerHeight;
+      const headerHeight = 80; // Approximate header height
+      const footerSpace = 20; // Space from bottom
+      const maxHeight = viewportHeight - headerHeight - footerSpace;
 
       // Set different max heights based on content
       if (items.length === 0) {
-        setDropdownHeight(`${Math.min(600, maxHeight)}px`)
+        setDropdownHeight(`${Math.min(600, maxHeight)}px`);
       } else if (items.length <= 2) {
-        setDropdownHeight(`${Math.min(650, maxHeight)}px`)
+        setDropdownHeight(`${Math.min(650, maxHeight)}px`);
       } else {
-        setDropdownHeight(`${Math.min(650, maxHeight)}px`)
+        setDropdownHeight(`${Math.min(650, maxHeight)}px`);
       }
-    }
+    };
 
-    calculateDropdownHeight()
-    window.addEventListener("resize", calculateDropdownHeight)
-    return () => window.removeEventListener("resize", calculateDropdownHeight)
-  }, [items.length])
+    calculateDropdownHeight();
+    window.addEventListener("resize", calculateDropdownHeight);
+    return () => window.removeEventListener("resize", calculateDropdownHeight);
+  }, [items.length]);
 
   const handleCheckout = () => {
-    setIsOpen(false)
-    router.push("/checkout")
-  }
+    setIsOpen(false);
+    router.push("/checkout");
+  };
 
   const handleViewCart = () => {
-    setIsOpen(false)
-    router.push("/cart")
+    setIsOpen(false);
+    router.push("/cart");
+  };
+
+  async function fetchCart() {
+    try {
+      const items = await readCart();
+      setCartItems(items);
+    } catch (err) {
+      console.error("Error loading cart:", err);
+    } finally {
+      setLoading(false);
+    }
+  }
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  const totalPrice = cartItems.reduce(
+    (sum, item) => sum + item.quantity * item.price,
+    0
+  );
+
+  const handleDecrement = async (id: string, quantity: number) => {
+    if (quantity <= 1) {
+      setLoading(true);
+      await deleteCartItem(id);
+      fetchCart();
+      setLoading(false);
+    } else {
+      setLoading(true);
+      await updateCartQuantity(id, quantity - 1);
+      fetchCart();
+      setLoading(false);
+    }
+  };
+
+  const handleIncrement = async (
+    quantity: number,
+    stock: number,
+    id: string
+  ) => {
+    if (quantity >= stock) return;
+
+    setLoading(true);
+    await updateCartQuantity(id, quantity + 1);
+    fetchCart();
+    setLoading(false);
+  };
+
+  const handleFullDelete = async (id: string) => {
+    setLoading(true);
+    await fullyDeleteCartItem(id);
+    fetchCart();
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    const channel = supabase
+      .channel("cart-channel")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "cart_items" },
+        (payload) => {
+          switch (payload.eventType) {
+            case "INSERT":
+              setCartItems((prevItems) => [
+                ...prevItems,
+                payload.new as CartItem,
+              ]);
+              break;
+
+            case "UPDATE":
+              setCartItems((prevItems) =>
+                prevItems.map((item) =>
+                  item.id === payload.new.id ? (payload.new as CartItem) : item
+                )
+              );
+              break;
+
+            case "DELETE":
+              setCartItems((prevItems) =>
+                prevItems.filter((item) => item.id !== payload.old.id)
+              );
+              break;
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
+    if (loading) {
+    return <CopperLoading size={40} strokeWidth={3} />;
   }
 
-  console.log(isOpen, "Cart Dropdown Open State")
 
-  const CartTrigger = React.forwardRef<HTMLButtonElement, React.ComponentProps<typeof Button>>(({ ...props }, ref) => (
+  const CartTrigger = React.forwardRef<
+    HTMLButtonElement,
+    React.ComponentProps<typeof Button>
+  >(({ ...props }, ref) => (
     <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
       <Button
         variant="ghost"
@@ -80,7 +204,7 @@ export function CartDropdown() {
       >
         <ShoppingCart className="h-5 w-5 group-hover:animate-bounce" />
         <AnimatePresence>
-          {totalItems > 0 && (
+          {cartItems.length > 0 && (
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
@@ -88,14 +212,14 @@ export function CartDropdown() {
               transition={{ type: "spring", stiffness: 500, damping: 30 }}
             >
               <Badge className="absolute -top-1 -right-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white text-xs h-6 w-6 flex items-center justify-center p-0 border-2 border-white shadow-lg">
-                {totalItems}
+                {cartItems.length}
               </Badge>
             </motion.div>
           )}
         </AnimatePresence>
       </Button>
     </motion.div>
-  ))
+  ));
 
   // Mobile Cart Content (320px-480px)
   const MobileCartContent = () => (
@@ -113,11 +237,11 @@ export function CartDropdown() {
               <div>
                 <h2 className="font-bold text-xl">My Cart</h2>
                 <p className="text-emerald-100 text-sm">
-                  {totalItems} {totalItems === 1 ? "item" : "items"}
+                  {cartItems.length} {cartItems.length === 1 ? "item" : "items"}
                 </p>
               </div>
             </div>
-            {items.length > 0 && (
+            {cartItems.length > 0 && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -130,27 +254,37 @@ export function CartDropdown() {
           </div>
           <div className="bg-white/20 backdrop-blur-sm rounded-2xl p-3">
             <div className="flex items-center justify-between">
-              <span className="text-white/90 text-sm font-medium">Total Amount</span>
-              <span className="text-white font-bold text-2xl">Rs {totalPrice.toFixed(2)}</span>
+              <span className="text-white/90 text-sm font-medium">
+                Total Amount
+              </span>
+              <span className="text-white font-bold text-2xl">
+                Rs {totalPrice.toFixed(2)}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {items.length === 0 ? (
+      {cartItems.length === 0 ? (
         <div className="flex-1 flex items-center justify-center p-6">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
             <div className="w-24 h-24 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-3xl flex items-center justify-center mx-auto mb-4">
               <Package2 className="h-12 w-12 text-emerald-600" />
             </div>
-            <h3 className="font-bold text-xl text-slate-900 mb-2">Cart is Empty</h3>
+            <h3 className="font-bold text-xl text-slate-900 mb-2">
+              Cart is Empty
+            </h3>
             <p className="text-slate-500 text-sm mb-6 max-w-xs">
               Add some amazing products to get started with your shopping!
             </p>
             <Button
               onClick={() => {
-                setIsOpen(false)
-                router.push("/products")
+                setIsOpen(false);
+                router.push("/products");
               }}
               className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-8 py-3 rounded-2xl font-semibold shadow-lg"
             >
@@ -166,7 +300,7 @@ export function CartDropdown() {
             <ScrollArea className="h-full px-4 py-4">
               <div className="space-y-3">
                 <AnimatePresence>
-                  {items.map((item, index) => (
+                  {cartItems.map((item, index) => (
                     <motion.div
                       key={item.id}
                       initial={{ opacity: 0, x: -20 }}
@@ -180,12 +314,14 @@ export function CartDropdown() {
                         <div className="relative w-20 h-20 flex-shrink-0">
                           <Image
                             src={item.thumbnail || "/placeholder.svg"}
-                            alt={item.name}
+                            alt={item.name || 'Product'}
                             fill
                             className="object-cover rounded-xl"
                           />
                           <div className="absolute -top-2 -right-2 w-6 h-6 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-white text-xs font-bold">{item.quantity}</span>
+                            <span className="text-white text-xs font-bold">
+                              {item.quantity}
+                            </span>
                           </div>
                         </div>
                         {/* Mobile Product Info */}
@@ -206,20 +342,27 @@ export function CartDropdown() {
                           <div className="space-y-3">
                             {/* Mobile Price */}
                             <div className="flex items-center space-x-2">
-                              <span className="font-bold text-emerald-600 text-lg">Rs {item.price.toFixed(2)}</span>
-                              {item.originalPrice && item.originalPrice > item.price && (
-                                <span className="text-xs text-slate-500 line-through">
-                                  Rs {item.originalPrice.toFixed(2)}
-                                </span>
-                              )}
+                              <span className="font-bold text-emerald-600 text-lg">
+                                Rs {item.price.toFixed(2)}
+                              </span>
+                              {item.originalPrice &&
+                                item.originalPrice > item.price && (
+                                  <span className="text-xs text-slate-500 line-through">
+                                    Rs {item.originalPrice.toFixed(2)}
+                                  </span>
+                                )}
                             </div>
                             {/* Mobile Stock Status */}
                             <div className="flex items-center space-x-2">
                               <div
-                                className={`w-2 h-2 rounded-full ${item.stock > 0 ? "bg-green-500" : "bg-red-500"}`}
+                                className={`w-2 h-2 rounded-full ${
+                                  item.stock > 0 ? "bg-green-500" : "bg-red-500"
+                                }`}
                               />
                               <span className="text-xs text-slate-600">
-                                {item.stock > 0 ? `${item.stock} in stock` : "Out of stock"}
+                                {item.stock > 0
+                                  ? `${item.stock} in stock`
+                                  : "Out of stock"}
                               </span>
                             </div>
                             {/* Mobile Quantity Controls */}
@@ -229,7 +372,9 @@ export function CartDropdown() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-9 w-9 hover:bg-slate-200 rounded-l-xl"
-                                  onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                  onClick={() =>
+                                    updateQuantity(item.id, item.quantity - 1)
+                                  }
                                   disabled={item.quantity <= 1}
                                 >
                                   <Minus className="h-3 w-3" />
@@ -241,7 +386,9 @@ export function CartDropdown() {
                                   variant="ghost"
                                   size="icon"
                                   className="h-9 w-9 hover:bg-slate-200 rounded-r-xl"
-                                  onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                  onClick={() =>
+                                    updateQuantity(item.id, item.quantity + 1)
+                                  }
                                   disabled={item.quantity >= item.stock}
                                 >
                                   <Plus className="h-3 w-3" />
@@ -255,7 +402,9 @@ export function CartDropdown() {
                                   className="flex items-center space-x-1 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1"
                                 >
                                   <AlertTriangle className="h-3 w-3 text-amber-600" />
-                                  <span className="text-xs text-amber-700 font-medium">Max</span>
+                                  <span className="text-xs text-amber-700 font-medium">
+                                    Max
+                                  </span>
                                 </motion.div>
                               )}
                             </div>
@@ -292,11 +441,12 @@ export function CartDropdown() {
         </>
       )}
     </div>
-  )
+  );
 
   // Desktop Cart Content (>480px) - Optimized for viewport constraints
   const DesktopCartContent = () => {
-    const maxItemsHeight = items.length === 0 ? 0 : Math.min(items.length * 120, 300) // Limit items scroll area
+    const maxItemsHeight =
+      items.length === 0 ? 0 : Math.min(items.length * 120, 300); // Limit items scroll area
 
     return (
       <div className="flex flex-col" style={{ maxHeight: dropdownHeight }}>
@@ -308,9 +458,12 @@ export function CartDropdown() {
                 <ShoppingBag className="h-4 w-4 sm:h-5 sm:w-5" />
               </div>
               <div>
-                <h3 className="font-bold text-base sm:text-lg">Shopping Cart</h3>
+                <h3 className="font-bold text-base sm:text-lg">
+                  Shopping Cart
+                </h3>
                 <p className="text-emerald-100 text-xs sm:text-sm">
-                  {totalItems} {totalItems === 1 ? "item" : "items"} • Rs {totalPrice.toFixed(2)}
+                  {cartItems.length} {cartItems.length === 1 ? "item" : "items"}{" "}
+                  • Rs {totalPrice.toFixed(2)}
                 </p>
               </div>
             </div>
@@ -328,14 +481,22 @@ export function CartDropdown() {
         </div>
 
         <div className="flex-1 overflow-hidden">
-          {items.length === 0 ? (
+          {cartItems.length === 0 ? (
             <div className="p-6">
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="text-center py-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-center py-8"
+              >
                 <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Package2 className="h-8 w-8 sm:h-10 sm:w-10 text-emerald-600" />
                 </div>
-                <h4 className="font-semibold text-slate-900 mb-2 text-sm sm:text-base">Your cart is empty</h4>
-                <p className="text-slate-500 text-xs sm:text-sm mb-4">Discover our amazing eco-friendly products!</p>
+                <h4 className="font-semibold text-slate-900 mb-2 text-sm sm:text-base">
+                  Your cart is empty
+                </h4>
+                <p className="text-slate-500 text-xs sm:text-sm mb-4">
+                  Discover our amazing eco-friendly products!
+                </p>
                 <Button
                   onClick={() => router.push("/products")}
                   className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white px-4 py-2 rounded-xl font-medium shadow-lg text-sm"
@@ -352,7 +513,7 @@ export function CartDropdown() {
                 <ScrollArea style={{ height: `200px` }} className="pr-2">
                   <div className="space-y-3">
                     <AnimatePresence>
-                      {items.map((item, index) => (
+                      {cartItems.map((item, index) => (
                         <motion.div
                           key={item.id}
                           initial={{ opacity: 0, x: -20 }}
@@ -367,12 +528,14 @@ export function CartDropdown() {
                               <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex-shrink-0">
                                 <Image
                                   src={item.thumbnail || "/placeholder.svg"}
-                                  alt={item.name}
+                                  alt={item.name || "Product Image"}
                                   fill
                                   className="object-cover rounded-lg shadow-sm"
                                 />
                                 <div className="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full flex items-center justify-center">
-                                  <span className="text-white text-xs font-bold">{item.quantity}</span>
+                                  <span className="text-white text-xs font-bold">
+                                    {item.quantity}
+                                  </span>
                                 </div>
                               </div>
                               {/* Desktop Product Info */}
@@ -385,7 +548,7 @@ export function CartDropdown() {
                                     variant="ghost"
                                     size="icon"
                                     className="h-6 w-6 sm:h-8 sm:w-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg opacity-0 group-hover:opacity-100 transition-all duration-200 flex-shrink-0"
-                                    onClick={() => removeFromCart(item.id)}
+                                    onClick={() => handleFullDelete(item.id)}
                                   >
                                     <Trash2 className="h-3 w-3 sm:h-4 sm:w-4" />
                                   </Button>
@@ -397,20 +560,25 @@ export function CartDropdown() {
                                       <span className="font-bold text-emerald-600 text-sm sm:text-base">
                                         Rs {item.price.toFixed(2)}
                                       </span>
-                                      {item.originalPrice && item.originalPrice > item.price && (
-                                        <span className="text-xs text-slate-500 line-through">
-                                          Rs {item.originalPrice.toFixed(2)}
-                                        </span>
-                                      )}
+                                      {item.originalPrice &&
+                                        item.originalPrice > item.price && (
+                                          <span className="text-xs text-slate-500 line-through">
+                                            Rs {item.originalPrice.toFixed(2)}
+                                          </span>
+                                        )}
                                     </div>
                                     <div className="flex items-center space-x-1">
                                       <div
                                         className={`w-1.5 h-1.5 rounded-full ${
-                                          item.stock > 0 ? "bg-green-500" : "bg-red-500"
+                                          item.stock > 0
+                                            ? "bg-green-500"
+                                            : "bg-red-500"
                                         }`}
                                       />
                                       <span className="text-xs text-slate-600">
-                                        {item.stock > 0 ? `${item.stock} in stock` : "Out of stock"}
+                                        {item.stock > 0
+                                          ? `${item.stock} in stock`
+                                          : "Out of stock"}
                                       </span>
                                     </div>
                                   </div>
@@ -423,7 +591,9 @@ export function CartDropdown() {
                                       variant="ghost"
                                       size="icon"
                                       className="h-6 w-6 sm:h-8 sm:w-8 hover:bg-slate-100 rounded-l-lg"
-                                      onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                      onClick={() =>
+                                        handleDecrement(item.id, item.quantity)
+                                      }
                                       disabled={item.quantity <= 1}
                                     >
                                       <Minus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -435,7 +605,13 @@ export function CartDropdown() {
                                       variant="ghost"
                                       size="icon"
                                       className="h-6 w-6 sm:h-8 sm:w-8 hover:bg-slate-100 rounded-r-lg"
-                                      onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                      onClick={() =>
+                                        handleIncrement(
+                                          item.quantity,
+                                          item.stock,
+                                          item.id
+                                        )
+                                      }
                                       disabled={item.quantity >= item.stock}
                                     >
                                       <Plus className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
@@ -449,7 +625,9 @@ export function CartDropdown() {
                                       className="flex items-center space-x-1 bg-amber-50 border border-amber-200 rounded-lg px-2 py-1"
                                     >
                                       <AlertTriangle className="h-2.5 w-2.5 text-amber-600" />
-                                      <span className="text-xs text-amber-700 font-medium">Max</span>
+                                      <span className="text-xs text-amber-700 font-medium">
+                                        Max
+                                      </span>
                                     </motion.div>
                                   )}
                                 </div>
@@ -469,16 +647,22 @@ export function CartDropdown() {
                   <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-emerald-50 p-3 rounded-xl border border-emerald-200/50">
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-semibold text-slate-900 text-sm">
-                        Total ({totalItems} {totalItems === 1 ? "item" : "items"})
+                        Total ({cartItems.length}{" "}
+                        {cartItems.length === 1 ? "item" : "items"})
                       </span>
                       <span className="font-bold text-lg sm:text-xl bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                         Rs {totalPrice.toFixed(2)}
                       </span>
                     </div>
-                    <p className="text-xs text-slate-600">Shipping calculated at checkout</p>
+                    <p className="text-xs text-slate-600">
+                      Shipping calculated at checkout
+                    </p>
                   </div>
                   <div className="space-y-2">
-                    <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Button
                         onClick={handleCheckout}
                         className="w-full bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-600 hover:from-emerald-700 hover:via-emerald-600 hover:to-teal-700 text-white py-2.5 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group text-sm"
@@ -502,8 +686,8 @@ export function CartDropdown() {
           )}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <>
@@ -542,5 +726,5 @@ export function CartDropdown() {
         </DropdownMenu>
       </div>
     </>
-  )
+  );
 }
