@@ -863,7 +863,7 @@ export function Checkout() {
                     </CardHeader>
                     <CardContent className="p-6">
                       <RadioGroup
-                        value={selectedAddressId || ""}
+                        value={selectedAddressId}
                         onValueChange={handleAddressSelection}
                         className="space-y-4"
                       >
