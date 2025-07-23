@@ -200,16 +200,7 @@ export function Navigation() {
                           userSession.firstName + " " + userSession.lastName}
                       </p>
                     </div>
-                    {userMenuItems.map((item) => (
-                      <DropdownMenuItem
-                        key={item.label}
-                        className="hover:bg-gradient-to-r hover:from-emerald-50 hover:to-teal-50 hover:text-emerald-700 cursor-pointer transition-all duration-200"
-                        onClick={() => router.push(item.href)}
-                      >
-                        <item.icon className="h-4 w-4 mr-3" />
-                        {item.label}
-                      </DropdownMenuItem>
-                    ))}
+                    
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       className="hover:bg-red-50 hover:text-red-700 cursor-pointer transition-all duration-200"
