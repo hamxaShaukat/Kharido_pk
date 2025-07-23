@@ -186,7 +186,7 @@ export function CartDropdown() {
     };
   }, []);
     if (loading) {
-    return <CopperLoading size={40} strokeWidth={3} />;
+    return <div>Loading...</div>;
   }
 
 

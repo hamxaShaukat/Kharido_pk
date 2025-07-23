@@ -10,6 +10,5 @@ export async function getSessionById() {
         console.error("Error fetching session:", error);
         return null;
     }
-  
     return session?.user.id;
 }

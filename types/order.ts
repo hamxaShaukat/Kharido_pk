@@ -1,4 +1,4 @@
-const enum ORDERSTATUS {
+export enum ORDERSTATUS {
   PENDING = "pending",
   PROCESSING = "processing",
   SHIPPED = "shipped",
@@ -24,4 +24,16 @@ export type OrderItem = {
   price: number;
   original_price: number;
   thumbnail: string;
+};
+
+export type OrderData = {
+  id: string;
+  address_id: number;
+  order_num: string;
+  user_id: string;
+  total_amount: number;
+  status: ORDERSTATUS;
+  user_name: string;
+  user_email: string;
+  created_at:string;
 };
