@@ -2,7 +2,6 @@
 
 *A full-stack e-commerce application built with Next.js and Supabase, designed to deliver a fast, secure, and intuitive shopping experience.*
 
-![Kharido PK Preview](screenshots/preview.png) *(Replace with actual screenshot)*
 
 ## 🌐 **Live Demo**
 **[Visit Kharido PK →](https://kharido-pk.vercel.app)**
@@ -91,15 +90,7 @@ Visit `http://localhost:3000` to view the app.
   - Add to cart & checkout
   - Manage user profile
 
----
 
-## 📸 **Screenshots**
-
-| Homepage | Product Details | Admin Dashboard |
-|----------|----------------|-----------------|
-| ![Homepage](screenshots/home.png) | ![Product](screenshots/product.png) | ![Admin](screenshots/admin.png) |
-
----
 
 ## 🚀 **Deployment**
 
